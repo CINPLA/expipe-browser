@@ -2,10 +2,11 @@ TEMPLATE = app
 
 CONFIG += c++14
 
-QT += qml quick widgets
+QT += qml quick widgets sql
 
 SOURCES += main.cpp \
-    experimentmodel.cpp
+#    experimentmodel.cpp \
+    cachemodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -16,14 +17,16 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 #include(../libs/h5cpp/library_deployment.pri)
 
-CONFIG += conan_basic_setup
-include(conanbuildinfo.pri)
+#CONFIG += conan_basic_setup
+#include(conanbuildinfo.pri)
 
 LIBS += -lhdf5_serial
 INCLUDEPATH += /usr/include/hdf5/serial
 
-DISTFILES +=
+DISTFILES += \
+    conanfile.txt
 
 HEADERS += \
-    experimentmodel.h
+#    experimentmodel.h \
+    cachemodel.h
 

@@ -3,8 +3,6 @@ import QtQuick.Controls 1.3
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
-import CinplaBrowser 1.0
-
 Item {
     property alias text: textItem.text
     Layout.columnSpan: 2

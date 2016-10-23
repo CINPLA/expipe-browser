@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS += libs src
+SUBDIRS += src
 CONFIG += ordered
 src.depends = libs

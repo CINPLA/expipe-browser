@@ -9,5 +9,10 @@
         <file>ExperimentRightGridItem.qml</file>
         <file>ExperimentTitleItem.qml</file>
         <file>md5.js</file>
+        <file>LeftMenu.qml</file>
+        <file>ExperimentsView.qml</file>
+        <file>Experiment.qml</file>
+        <file>ProjectsView.qml</file>
+        <file>ExperimentList.qml</file>
     </qresource>
 </RCC>

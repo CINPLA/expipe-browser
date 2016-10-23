@@ -12,6 +12,6 @@ Item {
         anchors {
             right: parent.right
         }
-        color: "#434343"
+        color: "#434343"        
     }
 }

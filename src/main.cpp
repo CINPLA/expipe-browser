@@ -1,11 +1,26 @@
+#include "cachemodel.h"
+
 #include <QApplication>
 #include <QQmlApplicationEngine>
+#include <QDebug>
 
-#include "experimentmodel.h"
+#include <QSqlDatabase>
+#include <QSqlError>
 
 int main(int argc, char *argv[])
 {
-    qmlRegisterType<ExperimentModel>("CinplaBrowser", 1, 0, "ExperimentModel");
+    //    qmlRegisterType<ExperimentModel>("CinplaBrowser", 1, 0, "ExperimentModel");
+    qmlRegisterType<SqlQueryModel>("ExpipeBrowser", 1, 0, "SqlQueryModel");
+
+    QGuiApplication::setOrganizationName("Cinpla");
+    QGuiApplication::setApplicationName("Expipe Browser");
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("/media/norstore/server-cache.db");
+    if(!db.open()) {
+        qDebug() << db.lastError();
+        exit(0);
+    }
 
     QApplication app(argc, argv);
 
