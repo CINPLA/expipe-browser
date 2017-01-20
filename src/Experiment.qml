@@ -66,14 +66,31 @@ Rectangle {
                         color: "#121212"
                     }
                 }
-                
+
                 ExperimentLeftGridItem {
                     text: "experimenter"
                 }
-                
+
                 ExperimentRightGridItem {
-                    text: experimentData ? experimentData.experimenter_name : "No experiment selected"
+                    text: experimentData ? experimentData.experimenter : "No experiment selected"
                 }
+
+
+                ExperimentLeftGridItem {
+                    text: "camera"
+                }
+
+                ExperimentRightGridItem {
+                    text: experimentData ? experimentData.tracking.camera : "No experiment selected"
+                }
+
+//                ExperimentLeftGridItem {
+//                    text: "e-mail"
+//                }
+
+//                ExperimentRightGridItem {
+//                    text: experimentData ? experimentData.experimenter : "No experiment selected"
+//                }
                 
                 ExperimentLeftGridItem {
                     text: "filename"

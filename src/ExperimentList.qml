@@ -54,12 +54,16 @@ Rectangle {
             anchors.fill: parent
             delegate: ItemDelegate {
                 property variant modelData: model
-                property string imageSource: "http://gravatar.com/avatar/" + MD5.md5(experimenter_mail)
+                property string imageSource: "http://gravatar.com/avatar/" + MD5.md5("s@dragly.com")
                 anchors {
                     left: parent.left
                     right: parent.right
                 }
                 height: 64
+
+                Component.onCompleted: {
+
+                }
 
                 Item {
                     id: imageItem
@@ -89,7 +93,7 @@ Rectangle {
                     }
                     Text {
                         color: "#121212"
-                        text: model.project_name + ", rat " + model.rat_nr
+                        text: model.project + ", rat " + model.subject
                         font.pixelSize: 12
                     }
                     Text {

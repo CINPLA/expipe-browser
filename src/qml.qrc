@@ -14,5 +14,8 @@
         <file>Experiment.qml</file>
         <file>ProjectsView.qml</file>
         <file>ExperimentList.qml</file>
+        <file>firebase.js</file>
+        <file>main.css</file>
+        <file>index.html</file>
     </qresource>
 </RCC>

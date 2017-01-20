@@ -2,7 +2,7 @@ TEMPLATE = app
 
 CONFIG += c++14
 
-QT += qml quick widgets sql
+QT += qml quick widgets sql webengine
 
 SOURCES += main.cpp \
 #    experimentmodel.cpp \
@@ -24,7 +24,9 @@ LIBS += -lhdf5_serial
 INCLUDEPATH += /usr/include/hdf5/serial
 
 DISTFILES += \
-    conanfile.txt
+    conanfile.txt \
+    index.html \
+    main.css
 
 HEADERS += \
 #    experimentmodel.h \

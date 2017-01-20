@@ -6,6 +6,7 @@
 
 #include <QSqlDatabase>
 #include <QSqlError>
+#include <QtWebEngine/QtWebEngine>
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +24,8 @@ int main(int argc, char *argv[])
     }
 
     QApplication app(argc, argv);
+
+    QtWebEngine::initialize();
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
