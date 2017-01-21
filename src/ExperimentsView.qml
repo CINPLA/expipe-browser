@@ -16,11 +16,25 @@ Item {
     }
 
     function refresh() {
+        var previousId
+        if(experimentList.currentData) {
+            previousId = experimentList.currentData.id
+        }
         listModel.clear()
         for(var id in experiments) {
             var experiment = experiments[id]
             experiment.id = id
             listModel.append(experiment)
+        }
+
+        // set the correct index back
+        if(previousId) {
+            for(var i = 0; i < listModel.count; i++) {
+                if(listModel.get(i).id === previousId) {
+                    experimentList.currentIndex = i
+                    break
+                }
+            }
         }
     }
 
@@ -28,13 +42,20 @@ Item {
         for(var i = 0; i < listModel.count; i++) {
             var item = listModel.get(i)
             if(item.id === id) {
-                listModel.set(i, experiments[id])
-                console.log("Set listmodel")
+                if(experiments[id]) {
+                    listModel.set(i, experiments[id])
+                } else {
+                    listModel.remove(i)
+                }
+
+                return
             }
         }
+        refresh()
     }
 
     function putReceived(path, data) {
+        console.log("Got put on", path)
         if(path === "/") {
             experiments = data
             console.log("Result", JSON.stringify(experiments))
@@ -56,6 +77,7 @@ Item {
     }
 
     function patchReceived(path, data) {
+        console.log("Got patch on", path)
         if(path === "/") {
             experiments = data
             console.log("Result", JSON.stringify(experiments))
@@ -114,24 +136,10 @@ Item {
             highlighted: true
             text: "Create new"
             onClicked: {
-                var url = Firebase.server_url + "experiments.json"
-                var req = new XMLHttpRequest()
-                req.onreadystatechange = function() {
-                    if(req.readyState != XMLHttpRequest.DONE) {
-                        return
-                    }
-                    if(req.status != 200) {
-                        console.log("ERROR:", req.status, req.statusText)
-                        console.log(req.responseText)
-                        return
-                    }
-                    console.log("Put result:", req.status, req.responseText)
-                    refresh()
-                }
-                req.open("POST", url)
-                var experiment = {"datetime":"2016-11","experimenter":"mikkel","filename":"blah.exdir","project":"ida_tracking","registered":"2017-01-03","subject":"b_1515","tracking":{"box_size":"small","camera":"cheap"}}
-                req.setRequestHeader("Authorization", Firebase.authorization)
-                req.send(JSON.stringify(experiment))
+                var experiment = {"datetime":"","experimenter":"","filename":"","project":"","registered":"","subject":""}
+                Firebase.post("experiments", experiment, function() {
+                    console.log("Posted!")
+                })
             }
         }
     }

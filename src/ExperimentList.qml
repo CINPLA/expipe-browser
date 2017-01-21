@@ -12,6 +12,7 @@ import "firebase.js" as Firebase
 Rectangle {
     id: root
     property alias model: listView.model
+    property alias currentIndex: listView.currentIndex
     readonly property var currentData: listView.currentItem ? listView.currentItem.modelData : undefined
     readonly property string currentImageSource: listView.currentItem ? listView.currentItem.imageSource : ""
     

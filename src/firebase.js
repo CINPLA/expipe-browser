@@ -65,6 +65,24 @@ function patch(name, data, callback) {
     req.send(JSON.stringify(data))
 }
 
+function post(name, data, callback) {
+    var url = server_url + name + ".json?auth=" + auth
+    var req = new XMLHttpRequest()
+    req.onreadystatechange = function() {
+        if(req.readyState != XMLHttpRequest.DONE) {
+            return
+        }
+        if(req.status != 200) {
+            console.log("ERROR:", req.status, req.statusText)
+            console.log(req.responseText)
+            return
+        }
+        console.log("Post result:", req.status, req.responseText)
+    }
+    req.open("POST", url)
+    req.send(JSON.stringify(data))
+}
+
 function listen(parent, name, putCallback, patchCallback, errorCallback) {
     if(!timerRoot) {
         timerRoot = parent
