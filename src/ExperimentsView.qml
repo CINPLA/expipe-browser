@@ -11,18 +11,27 @@ import "firebase.js" as Firebase
 Item {
     id: root
 
+    property string requestedId
+
     property var experiments: {
         return {}
     }
 
     function refresh() {
+        console.log("Refreshing", requestedId)
         var previousId
-        if(experimentList.currentData) {
+        if(requestedId !== "") {
+            previousId = requestedId
+        } else if(experimentList.currentData) {
             previousId = experimentList.currentData.id
         }
         listModel.clear()
         for(var id in experiments) {
             var experiment = experiments[id]
+            if(!experiment) {
+                continue
+            }
+
             experiment.id = id
             listModel.append(experiment)
         }
@@ -47,7 +56,6 @@ Item {
                 } else {
                     listModel.remove(i)
                 }
-
                 return
             }
         }
@@ -137,8 +145,15 @@ Item {
             text: "Create new"
             onClicked: {
                 var experiment = {"datetime":"","experimenter":"","filename":"","project":"","registered":"","subject":""}
-                Firebase.post("experiments", experiment, function() {
-                    console.log("Posted!")
+                Firebase.post("experiments", experiment, function(req) {
+                    var experiment = JSON.parse(req.responseText)
+                    for(var i = 0; i < listModel.count; i++) {
+                        if(listModel.get(i).id === experiment.name) {
+                            experimentList.currentIndex = i
+                            return
+                        }
+                    }
+                    requestedId = experiment.name
                 })
             }
         }

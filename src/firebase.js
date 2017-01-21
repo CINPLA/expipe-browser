@@ -78,6 +78,7 @@ function post(name, data, callback) {
             return
         }
         console.log("Post result:", req.status, req.responseText)
+        callback(req)
     }
     req.open("POST", url)
     req.send(JSON.stringify(data))
