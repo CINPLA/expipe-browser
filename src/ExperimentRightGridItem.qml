@@ -15,6 +15,6 @@ Item {
 
         color: "#121212"
         selectByMouse: true
-        readOnly: true
+        readOnly: false
     }
 }

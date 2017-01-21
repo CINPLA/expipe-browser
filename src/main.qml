@@ -19,39 +19,54 @@ QQC1.ApplicationWindow {
     height: 1024
     title: qsTr("CINPLA Browser")
 
-    property string accessToken
+    property bool hasToken: false
 
-//    Settings {
-//        property alias width: root.width
-//        property alias height: root.height
-//    }
+    onHasTokenChanged: {
+        if(hasToken) {
+            experimentsView.retryConnection()
+        }
+    }
 
-//    LeftMenu {
-//        id: leftMenu
-//        anchors {
-//            left: parent.left
-//            top: parent.top
-//            bottom: parent.bottom
-//        }
+    Component.onCompleted: {
+//        console.log("Initializing firebase")
+//        Firebase.initialize(Firebase, root)
+//        Firebase.test(function (result) {
 
-//        width: 240
-//    }
+//        })
+//        console.log(Firebase.blah)
+    }
 
-//    Item {
-//        id: viewArea
-//        anchors {
-//            left: leftMenu.right
-//            top: parent.top
-//            bottom: parent.bottom
-//            right: parent.right
-//        }
-//    }
+    Settings {
+        property alias width: root.width
+        property alias height: root.height
+    }
 
-//    ExperimentsView {
-//        id: experimentsView
-//        anchors.fill: viewArea
-//        visible: leftMenu.selectedState === "experiments"
-//    }
+    LeftMenu {
+        id: leftMenu
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+        }
+
+        width: 240
+    }
+
+    Item {
+        id: viewArea
+        anchors {
+            left: leftMenu.right
+            top: parent.top
+            bottom: parent.bottom
+            right: parent.right
+        }
+    }
+
+    ExperimentsView {
+        id: experimentsView
+        anchors.fill: viewArea
+        visible: leftMenu.selectedState === "experiments"
+    }
 
 //    ProjectsView {
 //        id: projectsView
@@ -64,6 +79,7 @@ QQC1.ApplicationWindow {
         id: webView
         anchors.fill: parent
         url: "http://cinpla.org/expipe/auth/"
+        visible: !hasToken
     }
 
     Timer {
@@ -73,7 +89,10 @@ QQC1.ApplicationWindow {
         onTriggered: {
             webView.runJavaScript("globalToken", function(globalToken) {
                 if(globalToken) {
-                    root.accessToken = globalToken;
+                    Firebase.auth = globalToken
+                    hasToken = true
+                } else {
+                    hasToken = false
                 }
             })
         }

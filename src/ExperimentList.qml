@@ -7,6 +7,7 @@ import QtQuick.Layouts 1.1
 import ExpipeBrowser 1.0
 
 import "md5.js" as MD5
+import "firebase.js" as Firebase
 
 Rectangle {
     id: root

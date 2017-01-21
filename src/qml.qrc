@@ -17,5 +17,8 @@
         <file>firebase.js</file>
         <file>main.css</file>
         <file>index.html</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>ExperimentEdit.qml</file>
+        <file>eventsource.js</file>
     </qresource>
 </RCC>

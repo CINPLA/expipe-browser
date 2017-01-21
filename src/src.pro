@@ -26,7 +26,8 @@ INCLUDEPATH += /usr/include/hdf5/serial
 DISTFILES += \
     conanfile.txt \
     index.html \
-    main.css
+    main.css \
+    qtquickcontrols2.conf
 
 HEADERS += \
 #    experimentmodel.h \
