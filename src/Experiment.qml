@@ -49,16 +49,42 @@ Rectangle {
                                     data: modules[id]
                                 })
         }
+        return
+    }
+
+    function refreshModules(path) {
+        if(path === "/") {
+            refreshAllModules()
+            return
+        }
+        var pathSplit = path.split("/")
+        for(var i = 0; i < modulesModel.count; i++) {
+            var module = modulesModel.get(i)
+            var id = pathSplit[1]
+            if(module.id === id) {
+                if(!modules[id]) {
+                    modulesModel.remove(i)
+                    return
+                }
+                modulesModel.set(i, {id: id, data: modules[id]})
+                var dictEditor = moduleRepeater.itemAt(i)
+                pathSplit.shift() // remove ""
+                pathSplit.shift() // remove first element
+                dictEditor.refreshPath(pathSplit)
+                return
+            }
+        }
+        refreshAllModules()
     }
 
     function putReceived(path, data) {
         DictHelper.put(modules, path, data)
-        refreshAllModules()
+        refreshModules(path)
     }
 
     function patchReceived(path, data) {
         DictHelper.patch(modules, path, data)
-        refreshAllModules()
+        refreshModules(path)
     }
 
     function errorReceived() {
@@ -74,8 +100,11 @@ Rectangle {
 
     onExperimentDataChanged: {
         modulesModel.clear()
-        console.log("Experiment has change")
-        if(experimentData.id) {
+        if(experimentData && experimentData.id) {
+            if(modulesEventSource) {
+                modulesEventSource.close()
+                delete(modulesEventSource)
+            }
             modulesEventSource = Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
         }
     }
@@ -150,6 +179,7 @@ Rectangle {
             }
 
             Repeater {
+                id: moduleRepeater
                 model: ListModel {
                     id: modulesModel
                 }
@@ -157,9 +187,9 @@ Rectangle {
                     keyString: model.id
                     contents: model.data
                     basePath: "modules/" + experimentData.id + "/" + model.id
-//                        Component.onCompleted: {
-//                            console.log("DATA:", JSON.stringify(model.id))
-//                        }
+                    onContentsChanged: {
+                        console.log("Contents changed", JSON.stringify(contents))
+                    }
                 }
             }
         }

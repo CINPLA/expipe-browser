@@ -68,22 +68,46 @@ Column {
         return typeof(value)
     }
 
-    function refresh() {
-        updateObject()
-        contentsModel = createModel()
-        refreshParent()
+//    function refresh() {
+//        updateObject()
+//        updateModel()
+//        refreshParent()
+//    }
+
+    function refreshPath(pathSplit) {
+        console.log("Requested refresh on", pathSplit)
+//        updateObject()
+//        updateModel()
+        if(pathSplit.length === 0) {
+            console.log("Updating on", path, key)
+            updateObject()
+            updateModel()
+            return
+        }
+        var nextKey = pathSplit.shift() // first item is removed
+        for(var i in contentsModel) {
+            if(contentsModel[i].key === nextKey) {
+                console.log("Passing on to", nextKey)
+                var subEditor = repeater.itemAt(i).editor
+                subEditor.refreshPath(pathSplit)
+            }
+        }
     }
 
     function updateObject() {
         var self = contents
+        console.log("Self", JSON.stringify(contents))
         var parent = null
         for(var i in path) {
             var subPath = path[i]
             parent = self
             self = self[subPath]
+            console.log("Sub", subPath, JSON.stringify(self))
         }
         object = self
         parentObject = parent
+        textField.reset()
+        console.log("Backend value", backendText, object)
     }
 
     function createModel() {
@@ -95,6 +119,10 @@ Column {
             model.push({"key": i, "value": object[i]})
         }
         return model
+    }
+
+    function updateModel() {
+        contentsModel = createModel()
     }
 
     function isNumeric(num) {
@@ -150,19 +178,21 @@ Column {
         textField.color = column.waitingColor
     }
 
-    onPathChanged: {
-        updateObject()
-        contentsModel = createModel()
-    }
+//    onPathChanged: {
+//        updateObject()
+//        updateModel()
+//    }
 
     onContentsChanged: {
-        updateObject()
-        contentsModel = createModel()
+        for(var i = 0; i < repeater.count; i++) {
+            var subEditor = repeater.itemAt(i).editor
+            subEditor.contents = contents
+        }
     }
 
     Component.onCompleted: {
         updateObject()
-        contentsModel = createModel()
+        updateModel()
     }
 
     Item {
@@ -217,7 +247,7 @@ Column {
 
             Rectangle {
                 id: rect
-                property bool show: mouseArea.containsMouse || textField.focus
+                property bool show: mouseArea.containsMouse || textField.activeFocus
                 anchors {
                     verticalCenter: parent.verticalCenter
                 }
@@ -252,14 +282,18 @@ Column {
 
                     onEditingFinished: {
                         putChanges()
-//                        column.parentObject[column.key] = parseInput(textField.text)
-//                        column.refresh()
-//                        textField.text = backendText
-//                        textField.focus = false
+                    }
+
+                    function reset() {
+                        text = Qt.binding(function() {return backendText})
+                    }
+
+                    Keys.onReturnPressed: {
+                        focus = false
                     }
 
                     Keys.onEscapePressed: {
-                        text = backendText
+                        reset()
                         focus = false
                     }
                 }
@@ -288,8 +322,9 @@ Column {
                 height: minus.height + 4
 
                 onClicked: {
-                    delete(column.parentObject[column.key])
-                    column.refresh()
+                    console.log("TODO: Deletion needs to be implemented")
+//                    delete(column.parentObject[column.key])
+//                    column.refresh()
                 }
 
                 Text {
@@ -328,6 +363,7 @@ Column {
                 model: column.contentsModel
 
                 delegate: Item {
+                    property var editor: loader.item
                     width: loader.width
                     height: loader.height
 
@@ -349,7 +385,7 @@ Column {
                         Connections {
                             target: loader.item
                             onRefreshParent: {
-                                column.refresh()
+//                                column.refresh()
                             }
                         }
                     }
@@ -365,14 +401,15 @@ Column {
         x: 33 * 2
 
         function accept() {
-            console.log("Accept")
-            column.object[nameInput.text] = parseInput(valueInput.text)
+            console.log("TODO: New needs to be implemented")
+//            console.log("Accept")
+//            column.object[nameInput.text] = parseInput(valueInput.text)
 
-            column.refresh()
-            nameInput.text = ""
-            valueInput.text = ""
-            templateSelector.currentIndex = 0
-            visible = false
+//            column.refresh()
+//            nameInput.text = ""
+//            valueInput.text = ""
+//            templateSelector.currentIndex = 0
+//            visible = false
         }
 
         Text {
