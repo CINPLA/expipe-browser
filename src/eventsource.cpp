@@ -37,9 +37,6 @@ void EventSource::reconnect()
 
 void EventSource::processReply(QNetworkReply *reply)
 {
-    qDebug() << "------------------ GOT MANAGER REPLY ----------------";
-    qDebug() << reply->readAll();
-    qDebug() << "------------------ END MANAGER REPLY ----------------";
 }
 
 
@@ -47,23 +44,27 @@ void EventSource::processReadyRead()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply) {
-        QString eventLine = reply->readLine();
-        if(eventLine.startsWith("event:")) {
-            eventLine.replace(QRegularExpression("^event:\s*"), "");
+        QString contents = reply->readAll().trimmed();
+        QStringList lines = contents.split("\n");
+        if(lines.count() < 2) {
+            qDebug() << "ERROR: Too few lines in event!" << lines;
+            qDebug() << "Contents:" << contents;
+            return;
+        }
+        QString eventLine = lines[0];
+        QString dataLine = lines[1];
+        if(eventLine.startsWith("event:") && dataLine.startsWith("data:")) {
+            eventLine.replace(QRegularExpression("^event:\\s*"), "");
             QString eventType = eventLine.trimmed();
-            QString dataLine = reply->readLine();
-            if(dataLine.startsWith("data:")) {
-                dataLine.replace(QRegularExpression("^data:\s*"), "");
-                QString data = dataLine.trimmed();
-                eventReceived(eventType, data);
-            } else {
-                qDebug() << "ERROR: Got corrupted data line:" << dataLine;
-            }
+            dataLine.replace(QRegularExpression("^data:\\s*"), "");
+            QString data = dataLine.trimmed();
+            eventReceived(eventType, data);
         } else {
-            qDebug() << "ERROR: Got corrupted event line:" << eventLine;
+            qDebug() << "ERROR: Got corrupted event line";
+            qDebug() << "Contents:" << contents;
+            return;
         }
     }
-    qDebug() << "Skipping" << reply->readAll();
 }
 
 
@@ -71,9 +72,6 @@ void EventSource::processFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply) {
-        qDebug() << "------------------ GOT FINISHED ----------------";
-        qDebug() << reply->readAll();
-        qDebug() << "------------------ END FINISHED ----------------";
         QUrl url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
         if(!url.isEmpty()) {
             setUrl(url);

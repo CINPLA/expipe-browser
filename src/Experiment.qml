@@ -97,14 +97,6 @@ Rectangle {
         }
     }
 
-    onExperimentDataChanged: {
-        modulesModel.clear()
-        if(experimentData && experimentData.id) {
-//            modulesEventSource = Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
-            eventSource.url = Firebase.server_url + "modules/" + experimentData.id + ".json?auth=" + Firebase.auth
-        }
-    }
-
     color: "#fefefe"
     border {
         color: "#dedede"
@@ -113,6 +105,7 @@ Rectangle {
 
     EventSource {
         id: eventSource
+        url: experimentData ? Firebase.server_url + "modules/" + experimentData.id + ".json?auth=" + Firebase.auth : ""
         onEventReceived: {
             console.log("Received event", type, data)
             var d = JSON.parse(data)
