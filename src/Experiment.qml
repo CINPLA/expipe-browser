@@ -7,19 +7,23 @@ import ExpipeBrowser 1.0
 
 import "md5.js" as MD5
 import "firebase.js" as Firebase
+import "dicthelper.js" as DictHelper
 
 Rectangle {
     id: root
 
     property var experimentData
     property string imageSource
+    property var modulesEventSource
 
     property var editors: [
-//        experimenter,
+        //        experimenter,
         project,
     ]
 
-    property var modules
+    property var modules: {
+        return {}
+    }
 
     function finishEditing(callback) {
         for(var i in editors) {
@@ -34,23 +38,45 @@ Rectangle {
         callback()
     }
 
-    function putReceived() {
-        console.log("Got module put")
+    function refreshAllModules() {
+        modulesModel.clear()
+        for(var id in modules) {
+            if(!modules[id]) {
+                continue
+            }
+            modulesModel.append({
+                                    id: id,
+                                    data: modules[id]
+                                })
+        }
     }
 
-    function patchReceived() {
-        console.log("Got module patch")
+    function putReceived(path, data) {
+        DictHelper.put(modules, path, data)
+        refreshAllModules()
+    }
+
+    function patchReceived(path, data) {
+        DictHelper.patch(modules, path, data)
+        refreshAllModules()
     }
 
     function errorReceived() {
         console.log("Got module error")
-        // TODO reset listening on error
+    }
+
+    Component.onDestruction: {
+        if(modulesEventSource) {
+            modulesEventSource.close()
+            delete(modulesEventSource)
+        }
     }
 
     onExperimentDataChanged: {
+        modulesModel.clear()
         console.log("Experiment has change")
         if(experimentData.id) {
-//            Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
+            modulesEventSource = Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
         }
     }
 
@@ -84,18 +110,24 @@ Rectangle {
                 fillMode: Image.PreserveAspectCrop
             }
 
-//            ExperimentEdit {
-//                id: experimenter
-//                experimentData: root.experimentData
-//                property: "users"
-//                text: "Users"
-//            }
+            //            ExperimentEdit {
+            //                id: experimenter
+            //                experimentData: root.experimentData
+            //                property: "users"
+            //                text: "Users"
+            //            }
 
             ExperimentEdit {
                 id: project
                 experimentData: root.experimentData
                 property: "project"
                 text: "Project"
+            }
+
+            ExperimentEdit {
+                experimentData: root.experimentData
+                property: "location"
+                text: "Location"
             }
 
             ExperimentListEdit {
@@ -111,6 +143,24 @@ Rectangle {
                 text: "Subjects"
             }
 
+            Text {
+                text: "Modules"
+                font.pixelSize: 24
+                font.weight: Font.Bold
+            }
+
+            Repeater {
+                model: ListModel {
+                    id: modulesModel
+                }
+                DictionaryEditor {
+                    keyString: model.id
+                    contents: model.data
+//                        Component.onCompleted: {
+//                            console.log("DATA:", JSON.stringify(model.id))
+//                        }
+                }
+            }
         }
     }
 }

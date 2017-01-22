@@ -134,4 +134,5 @@ function listen(parent, name, putCallback, patchCallback, errorCallback) {
     source.onmessage = function (event) {
         console.log("Message", event)
     }
+    return source
 }

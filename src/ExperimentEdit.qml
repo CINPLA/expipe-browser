@@ -16,7 +16,14 @@ Item {
     property color readyColor: "#121212"
     property color waitingColor: "#979797"
     property var experimentItem
-    readonly property string backendText: experimentData ? experimentData[root.property] : ""
+    readonly property string backendText: {
+        if(experimentData && experimentData[root.property]) {
+            return experimentData[root.property]
+        } else {
+            return ""
+        }
+    }
+
     property bool hasChanges: textInput.text != backendText
 
     width: 400

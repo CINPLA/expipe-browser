@@ -121,6 +121,13 @@ Item {
             })
         }
 
+        onCurrentIndexChanged: {
+            loader.source = ""
+            if(experimentList.currentIndex > -1) {
+                loader.source = "Experiment.qml"
+            }
+        }
+
         Button {
             anchors {
                 right: parent.right
@@ -132,13 +139,7 @@ Item {
             onClicked: {
                 var datetime = (new Date()).toISOString()
                 var experiment = {
-                    registered: datetime,
-                    datetime: false,
-                    users: false,
-                    datasets: false,
-                    project: false,
-                    subjects: false,
-                    location: false
+                    registered: datetime
                 }
                 Firebase.post("actions", experiment, function(req) {
                     var experiment = JSON.parse(req.responseText)
@@ -162,6 +163,5 @@ Item {
             top: parent.top
             bottom: parent.bottom
         }
-        source: experimentList.currentIndex > -1 ? "Experiment.qml" : ""
     }
 }

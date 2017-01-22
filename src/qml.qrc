@@ -23,5 +23,7 @@
         <file>ExperimentListEdit.qml</file>
         <file>dicthelper.js</file>
         <file>ListComboEdit.qml</file>
+        <file>DictionaryEditor.qml</file>
+        <file>grid.png</file>
     </qresource>
 </RCC>
