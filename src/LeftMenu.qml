@@ -21,12 +21,16 @@ Rectangle {
             identifier: "experiments"
         }
         ListElement {
-            name: "Users"
-            identifier: "users"
-        }
-        ListElement {
             name: "Projects"
             identifier: "projects"
+        }
+        ListElement {
+            name: "Subjects"
+            identifier: "subjects"
+        }
+        ListElement {
+            name: "Users"
+            identifier: "users"
         }
         ListElement {
             name: "Analyses"

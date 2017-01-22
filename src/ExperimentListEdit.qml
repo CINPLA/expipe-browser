@@ -1,0 +1,202 @@
+import QtQuick 2.4
+import QtQuick.Controls 2.0
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.1
+
+import ExpipeBrowser 1.0
+
+import "md5.js" as MD5
+import "firebase.js" as Firebase
+
+Column {
+    id: root
+    property string text
+    property string property
+    property var experimentData
+    property color readyColor: "#121212"
+    property color waitingColor: "#979797"
+    property color inputColor: readyColor
+    property var experimentItem
+    property bool readOnly: false
+    property string autoCompletePath
+    property var comboModel: []
+    property var model: {
+        var result = []
+        if(!experimentData) {
+            return []
+        }
+
+        var currentValue = experimentData[root.property]
+        if(typeof(currentValue) !== "object") {
+            return []
+        }
+        for(var i in currentValue) {
+            result.push({key: i})
+        }
+        return result
+    }
+
+    width: 400
+
+    onExperimentDataChanged: {
+        if(!experimentData) {
+            return
+        }
+        console.log("Experiment data changed", JSON.stringify(experimentData[root.property]))
+    }
+
+    onAutoCompletePathChanged: {
+        resetComboModel()
+    }
+
+    Component.onCompleted: {
+        resetComboModel()
+    }
+
+    function putChanges() {
+        console.log("Not implemented!")
+    }
+
+    function reset() {
+        console.log("Resetting")
+        console.log("Experiment data", JSON.stringify(experimentData[root.property]))
+        console.log("Model", JSON.stringify(model))
+        root.readOnly = false
+        root.inputColor = root.readyColor
+    }
+
+    function resetComboModel() {
+//        Firebase.get(autoCompletePath, function(xhr) {
+//            console.log("Resetting combo model!")
+//            var data = JSON.parse(xhr.responseText)
+//            var newModel = []
+//            newModel.push("")
+//            for(var i in data) {
+//                newModel.push(i)
+//            }
+//            console.log(JSON.stringify(newModel))
+//            comboModel = newModel
+//        })
+    }
+
+    Row {
+        spacing: 8
+        Text {
+            font.weight: Font.Bold
+            text: root.text + ":"
+        }
+        Text {
+            text: "+"
+            color: "green"
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    newRow.visible = true
+                    newInput.forceActiveFocus()
+                }
+            }
+        }
+    }
+
+    Row {
+        id: newRow
+        visible: false
+        TextInput {
+            id: newInput
+            text: ""
+            onEditingFinished: {
+                if(newInput.text === "") {
+                    newRow.visible = false
+                    return
+                }
+
+                var name = "actions/" + experimentData.id + "/" + root.property
+                var newData = {}
+                newData[newInput.text] = true
+                Firebase.patch(name, newData, function(req2) {
+                    console.log("Put result:", req2.status, req2.responseText)
+                    root.reset()
+                    newInput.text = ""
+                })
+                newRow.visible = false
+                root.readOnly = true
+                root.inputColor = root.waitingColor
+            }
+        }
+        Text {
+            color: "#979797"
+            text: "Enter new value"
+            visible: newInput.text == ""
+        }
+    }
+
+    Repeater {
+        model: root.model
+        Row {
+            property var backendText: modelData.key
+            property bool hasChanges: backendText !== textInput.text
+
+            function putChanges(callback) {
+                if(!hasChanges) {
+                    console.log("No change, returning")
+                    if(callback) {
+                        callback()
+                    }
+                    return
+                }
+                var name = "actions/" + experimentData.id + "/" + root.property
+                var targetProperty = root.property
+                var oldName = name + "/" + modelData.key
+                var newData = {}
+                newData[textInput.text] = true
+                console.log("Changing", oldName, JSON.stringify(newData))
+                Firebase.patch(name, newData, function(req2) {
+                    console.log("Put result:", req2.status, req2.responseText)
+                })
+                Firebase.remove(oldName, function(req) {
+                    console.log("Remove result:", req.responseText)
+                })
+            }
+
+            spacing: 8
+
+            TextInput {
+                id: textInput
+                text: backendText
+                horizontalAlignment: Label.AlignLeft
+                color: root.inputColor
+
+                onEditingFinished: {
+                    putChanges(root.reset)
+                }
+            }
+
+//            ComboBox {
+//                visible: root.autoCompletePath != ""
+//                model: root.comboModel
+//                onCurrentTextChanged: {
+//                    if(currentText === "") {
+//                        return
+//                    }
+//                    textInput.text = currentText
+//                    putChanges(root.reset)
+//                }
+//            }
+
+            Text {
+                text: "x"
+                color: "red"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        var name = "actions/" + experimentData.id + "/" + root.property
+                        var oldName = name + "/" + modelData.key
+                        Firebase.remove(oldName, function(req) {
+                            console.log("Remove result", req.responseText)
+                        })
+                    }
+                }
+            }
+        }
+    }
+}

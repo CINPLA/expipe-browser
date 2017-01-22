@@ -15,9 +15,11 @@ Rectangle {
     property string imageSource
 
     property var editors: [
-        experimenter,
+//        experimenter,
         project,
     ]
+
+    property var modules
 
     function finishEditing(callback) {
         for(var i in editors) {
@@ -30,6 +32,26 @@ Rectangle {
             }
         }
         callback()
+    }
+
+    function putReceived() {
+        console.log("Got module put")
+    }
+
+    function patchReceived() {
+        console.log("Got module patch")
+    }
+
+    function errorReceived() {
+        console.log("Got module error")
+        // TODO reset listening on error
+    }
+
+    onExperimentDataChanged: {
+        console.log("Experiment has change")
+        if(experimentData.id) {
+//            Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
+        }
     }
 
     color: "#fefefe"
@@ -62,18 +84,31 @@ Rectangle {
                 fillMode: Image.PreserveAspectCrop
             }
 
-            ExperimentEdit {
-                id: experimenter
-                experimentData: root.experimentData
-                property: "experimenter"
-                text: "Experimenter"
-            }
+//            ExperimentEdit {
+//                id: experimenter
+//                experimentData: root.experimentData
+//                property: "users"
+//                text: "Users"
+//            }
 
             ExperimentEdit {
                 id: project
                 experimentData: root.experimentData
                 property: "project"
                 text: "Project"
+            }
+
+            ExperimentListEdit {
+                experimentData: root.experimentData
+                property: "users"
+                text: "Experimenters"
+            }
+
+            ExperimentListEdit {
+                experimentData: root.experimentData
+                property: "subjects"
+                autoCompletePath: "/subjects"
+                text: "Subjects"
             }
 
         }

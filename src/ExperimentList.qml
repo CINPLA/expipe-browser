@@ -104,12 +104,9 @@ Rectangle {
                         font.pixelSize: 11
                     }
                 }
-//                MouseArea {
-//                    anchors.fill: parent
-                    onClicked: {
-                        listView.currentIndex = index
-                    }
-//                }
+                onClicked: {
+                    listView.currentIndex = index
+                }
             }
             highlightMoveDuration: 0
             highlight: Rectangle {

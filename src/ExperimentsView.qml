@@ -7,11 +7,13 @@ import ExpipeBrowser 1.0
 
 import "md5.js" as MD5
 import "firebase.js" as Firebase
+import "dicthelper.js" as DictHelper
 
 Item {
     id: root
 
     property string requestedId
+    property var experiment: loader.item
 
     property var experiments: {
         return {}
@@ -31,7 +33,6 @@ Item {
             if(!experiment) {
                 continue
             }
-
             experiment.id = id
             listModel.append(experiment)
         }
@@ -45,6 +46,11 @@ Item {
                 }
             }
         }
+        if(experimentList.currentIndex > -1) {
+            if(root.experiment) {
+                root.experiment.experimentData = listModel.get(experimentList.currentIndex)
+            }
+        }
     }
 
     function refreshOne(id) {
@@ -52,9 +58,15 @@ Item {
             var item = listModel.get(i)
             if(item.id === id) {
                 if(experiments[id]) {
+                    console.log("Refreshing", i, id)
                     listModel.set(i, experiments[id])
                 } else {
                     listModel.remove(i)
+                }
+                if(experimentList.currentIndex === i) {
+                    if(root.experiment) {
+                        root.experiment.experimentData = listModel.get(experimentList.currentIndex)
+                    }
                 }
                 return
             }
@@ -63,49 +75,23 @@ Item {
     }
 
     function putReceived(path, data) {
-        console.log("Got put on", path)
+        DictHelper.put(experiments, path, data)
+        console.log("Experiments", JSON.stringify(experiments))
         if(path === "/") {
-            experiments = data
-            console.log("Result", JSON.stringify(experiments))
             refresh()
-            return
+        } else {
+            refreshOne(path.split("/")[1])
         }
-        var parts = path.split("/")
-        var target = experiments
-        for(var i = 0; i < parts.length - 1; i++) {
-            if(parts[i] === "") {
-                continue
-            }
-            target = target[parts[i]]
-        }
-        console.log("Target", target, parts[i], data)
-        target[parts[i]] = data
-        console.log("Result", JSON.stringify(experiments))
-        refreshOne(parts[1])
     }
 
     function patchReceived(path, data) {
+        DictHelper.patch(experiments, path, data)
         console.log("Got patch on", path)
         if(path === "/") {
-            experiments = data
-            console.log("Result", JSON.stringify(experiments))
             refresh()
-            return
+        } else {
+            refreshOne(path.split("/")[1])
         }
-        var parts = path.split("/")
-        var target = experiments
-        for(var i = 0; i < parts.length - 1; i++) {
-            if(parts[i] === "") {
-                continue
-            }
-            target = target[parts[i]]
-        }
-        for(var j in data) {
-            console.log("Patching", "[", parts[i], "][", j, "] =", data[j])
-            target[parts[i]][j] = data[j]
-        }
-        console.log("Result", JSON.stringify(experiments))
-        refreshOne(parts[1])
     }
 
     function errorReceived() {
@@ -114,7 +100,7 @@ Item {
 
     function retryConnection() {
         console.log("Retrying connection")
-        Firebase.listen(root, "experiments", putReceived, patchReceived, errorReceived)
+        Firebase.listen(root, "actions", putReceived, patchReceived, errorReceived)
     }
     
     ExperimentList {
@@ -130,8 +116,8 @@ Item {
         width: 400
 
         onCurrentDataChanged: {
-            experiment.finishEditing(function() {
-                experiment.experimentData = currentData
+            root.experiment.finishEditing(function() { // TODO do this differently? onDestruction?
+                root.experiment.experimentData = listModel.get(experimentList.currentIndex)
             })
         }
 
@@ -144,8 +130,17 @@ Item {
             highlighted: true
             text: "Create new"
             onClicked: {
-                var experiment = {"datetime":"","experimenter":"","filename":"","project":"","registered":"","subject":""}
-                Firebase.post("experiments", experiment, function(req) {
+                var datetime = (new Date()).toISOString()
+                var experiment = {
+                    registered: datetime,
+                    datetime: false,
+                    users: false,
+                    datasets: false,
+                    project: false,
+                    subjects: false,
+                    location: false
+                }
+                Firebase.post("actions", experiment, function(req) {
                     var experiment = JSON.parse(req.responseText)
                     for(var i = 0; i < listModel.count; i++) {
                         if(listModel.get(i).id === experiment.name) {
@@ -159,15 +154,14 @@ Item {
         }
     }
     
-    Experiment {
-        id: experiment
+    Loader {
+        id: loader
         anchors {
             left: experimentList.right
             right: parent.right
             top: parent.top
             bottom: parent.bottom
         }
-//        experimentData: experimentList.currentData
-        imageSource: experimentList.currentImageSource
+        source: experimentList.currentIndex > -1 ? "Experiment.qml" : ""
     }
 }

@@ -65,6 +65,24 @@ function patch(name, data, callback) {
     req.send(JSON.stringify(data))
 }
 
+function remove(name, callback) {
+    var url = server_url + name + ".json?auth=" + auth
+    var req = new XMLHttpRequest()
+    req.onreadystatechange = function() {
+        if(req.readyState != XMLHttpRequest.DONE) {
+            return
+        }
+        if(req.status != 200) {
+            console.log("ERROR:", req.status, req.statusText)
+            console.log(req.responseText)
+            return
+        }
+        callback(req)
+    }
+    req.open("DELETE", url)
+    req.send()
+}
+
 function post(name, data, callback) {
     var url = server_url + name + ".json?auth=" + auth
     var req = new XMLHttpRequest()

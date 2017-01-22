@@ -30,7 +30,7 @@ Item {
             }
             return
         }
-        var name = "experiments/" + experimentData.id
+        var name = "actions/" + experimentData.id
         var targetProperty = root.property
         var data = {}
         data[root.property] = textInput.text

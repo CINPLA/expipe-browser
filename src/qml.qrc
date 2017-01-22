@@ -20,5 +20,8 @@
         <file>qtquickcontrols2.conf</file>
         <file>ExperimentEdit.qml</file>
         <file>eventsource.js</file>
+        <file>ExperimentListEdit.qml</file>
+        <file>dicthelper.js</file>
+        <file>ListComboEdit.qml</file>
     </qresource>
 </RCC>
