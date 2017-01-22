@@ -3,9 +3,12 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.0
 import Qt.labs.settings 1.0
 
+import "firebase.js" as Firebase
+
 Column {
     id: column
     signal refreshParent()
+    property string basePath
     property var contents: []
     property var contentsModel: []
     property var path: []
@@ -16,6 +19,10 @@ Column {
     property bool isLastItem: true
     property bool expanded: false
     property bool isRoot: false
+    property bool hasChanges: textField.text !== backendText
+    property bool isObject: type === "object"
+    property color readyColor: "#121212"
+    property color waitingColor: "#979797"
 
     property string backendText: {
         if(type === "null") {
@@ -60,10 +67,6 @@ Column {
         }
         return typeof(value)
     }
-
-    property bool hasChanges: textInput.text != backendText
-
-    property bool isObject: type === "object"
 
     function refresh() {
         updateObject()
@@ -130,26 +133,21 @@ Column {
     function putChanges(callback) {
         if(!hasChanges) {
             console.log("No change, returning")
-            if(callback) {
-                callback()
-            }
             return
         }
-        var name = "actions/" + experimentData.id
-        var targetProperty = root.property
-        var data = {}
-        data[column.key] = parseInput(textField.text)
-        Firebase.patch(name, data, function(req) {
+        var name = basePath + "/" + path.join("/")
+        var data = parseInput(textField.text)
+        Firebase.put(name, data, function(req) {
             console.log("Patch result:", req.status, req.responseText)
-            textInput.text = Qt.binding(function() {return backendText})
-            textInput.readOnly = false
-            textInput.color = root.readyColor
+            textField.text = Qt.binding(function() {return backendText})
+            textField.readOnly = false
+            textField.color = column.readyColor
             if(callback) {
                 callback()
             }
         })
-        textInput.readOnly = true
-        textInput.color = root.waitingColor
+        textField.readOnly = true
+        textField.color = column.waitingColor
     }
 
     onPathChanged: {
@@ -343,7 +341,8 @@ Column {
                                           contents: column.contents,
                                           path: subPath,
                                           isLastItem: (index === repeater.count - 1),
-                                          isRoot: false
+                                          isRoot: false,
+                                          basePath: column.basePath
                                       })
                         }
 

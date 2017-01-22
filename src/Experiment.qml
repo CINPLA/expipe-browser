@@ -156,6 +156,7 @@ Rectangle {
                 DictionaryEditor {
                     keyString: model.id
                     contents: model.data
+                    basePath: "modules/" + experimentData.id + "/" + model.id
 //                        Component.onCompleted: {
 //                            console.log("DATA:", JSON.stringify(model.id))
 //                        }
