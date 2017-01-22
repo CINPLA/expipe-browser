@@ -6,7 +6,8 @@ QT += qml quick widgets sql webengine
 
 SOURCES += main.cpp \
 #    experimentmodel.cpp \
-    cachemodel.cpp
+    cachemodel.cpp \
+    eventsource.cpp
 
 RESOURCES += qml.qrc
 
@@ -31,5 +32,6 @@ DISTFILES += \
 
 HEADERS += \
 #    experimentmodel.h \
-    cachemodel.h
+    cachemodel.h \
+    eventsource.h
 

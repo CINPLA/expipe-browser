@@ -96,18 +96,15 @@ Column {
 
     function updateObject() {
         var self = contents
-        console.log("Self", JSON.stringify(contents))
         var parent = null
         for(var i in path) {
             var subPath = path[i]
             parent = self
             self = self[subPath]
-            console.log("Sub", subPath, JSON.stringify(self))
         }
         object = self
         parentObject = parent
         textField.reset()
-        console.log("Backend value", backendText, object)
     }
 
     function createModel() {

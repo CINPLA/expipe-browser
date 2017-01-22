@@ -126,14 +126,14 @@ function listen(parent, name, putCallback, patchCallback, errorCallback) {
         timerRoot = parent
     }
 
-    console.log("Trying with", auth)
+    console.log("Requesting listen on", name)
 
     var url = server_url + name + ".json?auth=" + auth
 
     var source = new EventSource(url);
 
     source.onopen = function () {
-        console.log("Opened")
+        console.log("Opened listen on", name)
     };
     source.onerror = function () {
         console.log("Errored")

@@ -100,7 +100,21 @@ Item {
 
     function retryConnection() {
         console.log("Retrying connection")
-        Firebase.listen(root, "actions", putReceived, patchReceived, errorReceived)
+//        Firebase.listen(root, "actions", putReceived, patchReceived, errorReceived)
+        eventSource.url = Firebase.server_url + "actions.json?auth=" + Firebase.auth
+    }
+
+    EventSource {
+        id: eventSource
+        onEventReceived: {
+            console.log("Received event", type, data)
+            var d = JSON.parse(data)
+            if(type == "put") {
+                putReceived(d.path, d.data)
+            } else if(type == "patch") {
+                patchReceived(d.path, d.data)
+            }
+        }
     }
     
     ExperimentList {

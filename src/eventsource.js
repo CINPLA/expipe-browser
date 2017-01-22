@@ -15,6 +15,7 @@ function setTimeout(cb, delayTime) {
 }
 
 function clearTimeout(timer) {
+    console.log("Destroying timer")
     timer.destroy()
 }
 

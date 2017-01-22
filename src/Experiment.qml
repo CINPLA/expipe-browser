@@ -94,18 +94,14 @@ Rectangle {
     Component.onDestruction: {
         if(modulesEventSource) {
             modulesEventSource.close()
-            delete(modulesEventSource)
         }
     }
 
     onExperimentDataChanged: {
         modulesModel.clear()
         if(experimentData && experimentData.id) {
-            if(modulesEventSource) {
-                modulesEventSource.close()
-                delete(modulesEventSource)
-            }
-            modulesEventSource = Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
+//            modulesEventSource = Firebase.listen(root, "modules/" + experimentData.id, putReceived, patchReceived, errorReceived)
+            eventSource.url = Firebase.server_url + "modules/" + experimentData.id + ".json?auth=" + Firebase.auth
         }
     }
 
@@ -113,6 +109,19 @@ Rectangle {
     border {
         color: "#dedede"
         width: 1
+    }
+
+    EventSource {
+        id: eventSource
+        onEventReceived: {
+            console.log("Received event", type, data)
+            var d = JSON.parse(data)
+            if(type == "put") {
+                putReceived(d.path, d.data)
+            } else if(type == "patch") {
+                patchReceived(d.path, d.data)
+            }
+        }
     }
 
     Flickable {
