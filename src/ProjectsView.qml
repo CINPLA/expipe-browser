@@ -3,18 +3,79 @@ import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
-//import ExpipeBrowser 1.0
+import ExpipeBrowser 1.0
 
 import "md5.js" as MD5
+import "firebase.js" as Firebase
+import "dicthelper.js" as DictHelper
 
 Item {
     id: root
+
+    property var projectsModel: []
+    property var projects: {
+        return {}
+    }
+
+    function updateModel() {
+        // TODO update surgically
+        var newModel = []
+        for(var id in projects) {
+            newModel.push({id: id, data: data})
+        }
+        projectsModel = newModel
+    }
+
+    function retryConnection() {
+        eventSource.url = Firebase.server_url + "projects.json?auth=" + Firebase.auth
+    }
+
+    EventSource {
+        id: eventSource
+        onEventReceived: {
+            var d = JSON.parse(data)
+            switch(type) {
+            case "put":
+                DictHelper.put(projects, d.path, d.data)
+                updateModel()
+                break
+            case "patch":
+                DictHelper.patch(projects, d.path, d.data)
+                updateModel()
+                break
+            default:
+                console.log("Event", type, "data", data)
+            }
+        }
+    }
+
+    Rectangle {
+        id: stuff
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
+        height: 36
+        color: "#cecece"
+
+        Text {
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: parent.left
+                leftMargin: 20
+            }
+            text: "Current project:"
+            color: "#787878"
+            font.pixelSize: 14
+        }
+    }
 
     Rectangle {
         id: projectList
         anchors {
             left: parent.left
-            top: parent.top
+            top: stuff.bottom
             bottom: parent.bottom
         }
         width: 400
@@ -34,14 +95,8 @@ Item {
                 left: parent.left
             }
             ScrollBar.vertical: ScrollBar {}
-            model: SqlQueryModel {
-                query: "SELECT project_id, project_name, COUNT(*) as experiment_count " +
-                       "FROM experiments " +
-                       "GROUP BY project_id, project_name " +
-                       "ORDER BY project_name"
-            }
+            model: projectsModel
             delegate: Item {
-                property variant modelData: model
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -59,13 +114,8 @@ Item {
                     }
                     Text {
                         color: "#545454"
-                        text: project_name
+                        text: modelData.id
                         font.pixelSize: 14
-                    }
-                    Text {
-                        color: "#545454"
-                        text: experiment_count + " experiments"
-                        font.pixelSize: 12
                     }
                 }
                 MouseArea {
@@ -82,38 +132,5 @@ Item {
             }
             clip: true
         }
-    }
-
-    ExperimentList {
-        id: experimentList
-        anchors {
-            left: projectList.right
-            top: parent.top
-            bottom: parent.bottom
-        }
-        width: 400
-        model: SqlQueryModel {
-            query: {
-                if(listView.currentItem) {
-                    return "SELECT * FROM experiments " +
-                            "WHERE project_id = '" + listView.currentItem.modelData.project_id + "' " +
-                            "ORDER BY registered DESC"
-                } else {
-                    return "SELECT * FROM experiments " +
-                            "ORDER BY registered DESC"
-                }
-            }
-        }
-    }
-
-    Experiment {
-        anchors {
-            left: experimentList.right
-            top: parent.top
-            right: parent.right
-            bottom: parent.bottom
-        }
-        experimentData: experimentList.currentData
-        imageSource: experimentList.currentImageSource
     }
 }

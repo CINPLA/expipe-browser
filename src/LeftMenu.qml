@@ -17,12 +17,12 @@ Rectangle {
     ListModel {
         id: menuModel
         ListElement {
-            name: "Experiments"
-            identifier: "experiments"
-        }
-        ListElement {
             name: "Projects"
             identifier: "projects"
+        }
+        ListElement {
+            name: "Experiments"
+            identifier: "experiments"
         }
         ListElement {
             name: "Subjects"

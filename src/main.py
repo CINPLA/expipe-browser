@@ -14,6 +14,8 @@ from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager
 from PyQt5.QtQml import qmlRegisterType, QQmlComponent, QQmlApplicationEngine
 
+from expipe import settings
+
 class EventSource(QObject):
     event_received = pyqtSignal([str, str], name="eventReceived")
     
