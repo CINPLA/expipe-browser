@@ -198,11 +198,11 @@ Rectangle {
 
                 ComboBox {
                     id: templateSelector
-                    property var currentItem: currentIndex > 0 ? model.get(currentIndex) : {key: "", value: "", name: ""}
+                    property var currentItem: currentIndex > -1 ? model.get(currentIndex) : {key: "", value: "", name: ""}
                     textRole: "key"
                     displayText: "Template: " + currentText
                     model: ListModel {
-                        ListElement { key: "Custom"; value: "{}" }
+                        ListElement { key: "None"; value: "{}" }
                         ListElement { key: "Tracking"; name: "tracking"; value: '{"box_size": false, "wireless": false, "camera": false, "ttl_channel": false}' }
                         ListElement { key: "Grating"; name: "grating";value: '{"directions": false, "duration": false, "distance": false}' }
                     }
