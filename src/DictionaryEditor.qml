@@ -23,6 +23,7 @@ Column {
     property bool isObject: type === "object"
     property color readyColor: "#121212"
     property color waitingColor: "#979797"
+    property var parentEditor
 
     property string backendText: {
         if(type === "null") {
@@ -67,31 +68,36 @@ Column {
         }
         return typeof(value)
     }
-
-//    function refresh() {
-//        updateObject()
-//        updateModel()
-//        refreshParent()
-//    }
+    function refresh() {
+        updateObject()
+        updateModel()
+    }
 
     function refreshPath(pathSplit) {
         console.log("Requested refresh on", pathSplit)
-//        updateObject()
-//        updateModel()
         if(pathSplit.length === 0) {
             console.log("Updating on", path, key)
-            updateObject()
-            updateModel()
+            refresh()
             return
         }
         var nextKey = pathSplit.shift() // first item is removed
         for(var i in contentsModel) {
             if(contentsModel[i].key === nextKey) {
                 console.log("Passing on to", nextKey)
-                var subEditor = repeater.itemAt(i).editor
-                subEditor.refreshPath(pathSplit)
+                updateObject()
+                var nextObject = object[nextKey]
+                if(nextObject === undefined || nextObject === null) {
+                    refresh()
+                    return
+                } else {
+                    var subEditor = repeater.itemAt(i).editor
+                    subEditor.refreshPath(pathSplit)
+                    return
+                }
             }
         }
+        console.log("Path not found, refresh ourselves", path, key)
+        refresh()
     }
 
     function updateObject() {
@@ -163,7 +169,7 @@ Column {
         var name = basePath + "/" + path.join("/")
         var data = parseInput(textField.text)
         Firebase.put(name, data, function(req) {
-            console.log("Patch result:", req.status, req.responseText)
+            console.log("Put result:", req.status, req.responseText)
             textField.text = Qt.binding(function() {return backendText})
             textField.readOnly = false
             textField.color = column.readyColor
@@ -175,10 +181,25 @@ Column {
         textField.color = column.waitingColor
     }
 
-//    onPathChanged: {
-//        updateObject()
-//        updateModel()
-//    }
+    function remove() {
+        var name = basePath + "/" + path.join("/")
+        console.log("Removing", name)
+        Firebase.remove(name, function(req) {
+            console.log("Remove result", req.responseText)
+        })
+    }
+
+    function createNew() {
+        console.log("Creating new")
+        var name = basePath + "/" + path.join("/") + "/" + encodeURIComponent(nameInput.text)
+        var data = parseInput(valueInput.text)
+        Firebase.put(name, data, function(req) {
+            console.log("Put new result:", req.status, req.responseText)
+        })
+        nameInput.text = ""
+        valueInput.text = ""
+        newRow.visible = false
+    }
 
     onContentsChanged: {
         for(var i = 0; i < repeater.count; i++) {
@@ -188,8 +209,7 @@ Column {
     }
 
     Component.onCompleted: {
-        updateObject()
-        updateModel()
+        refresh()
     }
 
     Item {
@@ -319,9 +339,7 @@ Column {
                 height: minus.height + 4
 
                 onClicked: {
-                    console.log("TODO: Deletion needs to be implemented")
-//                    delete(column.parentObject[column.key])
-//                    column.refresh()
+                    remove()
                 }
 
                 Text {
@@ -371,6 +389,7 @@ Column {
                             var subPath = column.path.slice()
                             subPath.push(modelData.key)
                             setSource("DictionaryEditor.qml", {
+                                          parentEditor: column,
                                           contents: column.contents,
                                           path: subPath,
                                           isLastItem: (index === repeater.count - 1),
@@ -396,18 +415,6 @@ Column {
         visible: false
 
         x: 33 * 2
-
-        function accept() {
-            console.log("TODO: New needs to be implemented")
-//            console.log("Accept")
-//            column.object[nameInput.text] = parseInput(valueInput.text)
-
-//            column.refresh()
-//            nameInput.text = ""
-//            valueInput.text = ""
-//            templateSelector.currentIndex = 0
-//            visible = false
-        }
 
         Text {
             anchors {
@@ -454,7 +461,6 @@ Column {
             anchors.verticalCenter: parent.verticalCenter
             width: valueInput.width + 16
             height: valueInput.height + 8
-            visible: templateSelector.currentIndex === 0
             TextInput {
                 id: valueInput
                 width: 160
@@ -475,30 +481,30 @@ Column {
                 visible: !valueInput.text
             }
             Keys.onReturnPressed: {
-                newRow.accept()
+                createNew()
             }
         }
 
-        ComboBox {
-            id: templateSelector
-            textRole: "key"
-            model: ListModel {
-                ListElement { key: "Templates"; inactive: true }
-                ListElement { key: "Tracking"; value: '{"box_size": null, "wireless": false, "camera": null, "ttl_channel": null}' }
-                ListElement { key: "Grating"; value: '{"directions": null, "duration": false, "distance": null}' }
-            }
-            onActivated: {
-                if(!model.get(index).value) {
-                    valueInput.text = ""
-                }
-                valueInput.text = model.get(index).value
-            }
-        }
+//        ComboBox {
+//            id: templateSelector
+//            textRole: "key"
+//            model: ListModel {
+//                ListElement { key: "Templates"; inactive: true }
+//                ListElement { key: "Tracking"; value: '{"box_size": null, "wireless": false, "camera": null, "ttl_channel": null}' }
+//                ListElement { key: "Grating"; value: '{"directions": null, "duration": false, "distance": null}' }
+//            }
+//            onActivated: {
+//                if(!model.get(index).value) {
+//                    valueInput.text = ""
+//                }
+//                valueInput.text = model.get(index).value
+//            }
+//        }
 
         Button {
             text: "OK"
             onClicked: {
-                newRow.accept()
+                createNew()
             }
         }
 
