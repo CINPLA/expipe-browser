@@ -44,6 +44,7 @@ QQC1.ApplicationWindow {
         }
 
         width: 240
+        currentProject: projectsView.currentProject
     }
 
     Item {
@@ -56,17 +57,20 @@ QQC1.ApplicationWindow {
         }
     }
 
-    ExperimentsView {
-        id: experimentsView
-        anchors.fill: viewArea
-        visible: leftMenu.selectedState === "experiments"
-    }
-
     ProjectsView {
         id: projectsView
         anchors.fill: viewArea
         visible: leftMenu.selectedState === "projects"
     }
+
+    ExperimentsView {
+        id: experimentsView
+        anchors.fill: viewArea
+        visible: leftMenu.selectedState === "experiments"
+        currentProject: projectsView.currentProject
+    }
+
+    // TODO replace this entire WebView + Timer solution with a PyRebase wrapper
 
     WebEngineView {
         id: webView

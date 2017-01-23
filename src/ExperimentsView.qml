@@ -12,11 +12,20 @@ import "dicthelper.js" as DictHelper
 Item {
     id: root
 
+    property string currentProject
     property string requestedId
     property var experiment: loader.item
 
     property var experiments: {
         return {}
+    }
+
+    onCurrentProjectChanged: {
+        experiments = {}
+        listModel.clear()
+        if(currentProject) {
+            retryConnection()
+        }
     }
 
     function refresh() {
@@ -34,6 +43,7 @@ Item {
                 continue
             }
             experiment.id = id
+            experiment.project = currentProject
             listModel.append(experiment)
         }
 
@@ -74,34 +84,15 @@ Item {
         refresh()
     }
 
-    function putReceived(path, data) {
-        DictHelper.put(experiments, path, data)
-        console.log("Experiments", JSON.stringify(experiments))
-        if(path === "/") {
-            refresh()
-        } else {
-            refreshOne(path.split("/")[1])
-        }
-    }
-
-    function patchReceived(path, data) {
-        DictHelper.patch(experiments, path, data)
-        console.log("Got patch on", path)
-        if(path === "/") {
-            refresh()
-        } else {
-            refreshOne(path.split("/")[1])
-        }
-    }
-
     function errorReceived() {
         console.log("View received error")
     }
 
     function retryConnection() {
-        console.log("Retrying connection")
-//        Firebase.listen(root, "actions", putReceived, patchReceived, errorReceived)
-        eventSource.url = Firebase.server_url + "actions.json?auth=" + Firebase.auth
+        console.log("Retrying connection", currentProject)
+        if(currentProject) {
+            eventSource.url = Firebase.server_url + "actions/" + currentProject + "/.json?auth=" + Firebase.auth
+        }
     }
 
     EventSource {
@@ -109,10 +100,24 @@ Item {
         onEventReceived: {
             console.log("Received event", type, data)
             var d = JSON.parse(data)
-            if(type == "put") {
-                putReceived(d.path, d.data)
-            } else if(type == "patch") {
-                patchReceived(d.path, d.data)
+            switch(type) {
+            case "put":
+                DictHelper.put(experiments, d.path, d.data)
+                console.log("Experiments", JSON.stringify(experiments))
+                if(d.path === "/") {
+                    refresh()
+                } else {
+                    refreshOne(d.path.split("/")[1])
+                }
+                break
+            case "patch":
+                DictHelper.patch(experiments, d.path, d.data)
+                console.log("Got patch on", d.path)
+                if(d.path === "/") {
+                    refresh()
+                } else {
+                    refreshOne(d.path.split("/")[1])
+                }
             }
         }
     }
@@ -130,9 +135,9 @@ Item {
         width: 400
 
         onCurrentDataChanged: {
-            root.experiment.finishEditing(function() { // TODO do this differently? onDestruction?
-                root.experiment.experimentData = listModel.get(experimentList.currentIndex)
-            })
+//            root.experiment.finishEditing(function() { // TODO do this differently? onDestruction?
+            root.experiment.experimentData = listModel.get(experimentList.currentIndex)
+//            })
         }
 
         onCurrentIndexChanged: {
@@ -151,21 +156,55 @@ Item {
             highlighted: true
             text: "Create new"
             onClicked: {
-                var datetime = (new Date()).toISOString()
-                var experiment = {
-                    registered: datetime
-                }
-                Firebase.post("actions", experiment, function(req) {
-                    var experiment = JSON.parse(req.responseText)
-                    for(var i = 0; i < listModel.count; i++) {
-                        if(listModel.get(i).id === experiment.name) {
-                            experimentList.currentIndex = i
-                            return
-                        }
-                    }
-                    requestedId = experiment.name
-                })
+                newDialog.open()
             }
+        }
+    }
+
+    Dialog {
+        id: newDialog
+        title: "Create new action"
+        Column {
+            spacing: 8
+            Label {
+                text: "Provide an unique ID for your action.\n" +
+                      "A good ID is easy to remember and follows a naming scheme."
+            }
+            TextField {
+                id: newName
+                text: {
+                    return new Date().toISOString().slice(0, 10)
+                }
+            }
+            Label {
+                text: "Examples: '2016-01-12_1', 'bobby_1_init', 'lucia_surgery'"
+            }
+        }
+        standardButtons: Dialog.Cancel | Dialog.Ok
+        onAccepted: {
+            if(!currentProject) {
+                console.log("ERROR: Current project not set.")
+                return
+            }
+
+            if(!newName.text) {
+                console.log("ERROR: Name cannot be empty.")
+                return
+            }
+            var registered = (new Date()).toISOString()
+            var experiment = {
+                registered: registered
+            }
+            Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
+                var experiment = JSON.parse(req.responseText)
+                for(var i = 0; i < listModel.count; i++) {
+                    if(listModel.get(i).id === experiment.name) {
+                        experimentList.currentIndex = i
+                        return
+                    }
+                }
+                requestedId = experiment.name
+            })
         }
     }
     

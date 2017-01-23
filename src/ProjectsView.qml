@@ -12,6 +12,7 @@ import "dicthelper.js" as DictHelper
 Item {
     id: root
 
+    readonly property string currentProject: listView.currentIndex > -1 ? projectsModel[listView.currentIndex].id : ""
     property var projectsModel: []
     property var projects: {
         return {}

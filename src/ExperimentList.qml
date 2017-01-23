@@ -95,7 +95,7 @@ Rectangle {
                     }
                     Text {
                         color: "#121212"
-                        text: model.project + ", rat " + model.subject
+                        text: model.id
                         font.pixelSize: 12
                     }
                     Text {

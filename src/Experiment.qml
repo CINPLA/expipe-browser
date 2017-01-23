@@ -16,27 +16,22 @@ Rectangle {
     property string imageSource
     property var modulesEventSource
 
-    property var editors: [
-        //        experimenter,
-        project,
-    ]
-
     property var modules: {
         return {}
     }
 
-    function finishEditing(callback) {
-        for(var i in editors) {
-            var editor = editors[i]
-            if(editor.hasChanges) { // TODO this assumes only one editor has changes
-                editor.putChanges(function() {
-                    callback()
-                })
-                return
-            }
-        }
-        callback()
-    }
+//    function finishEditing(callback) {
+//        for(var i in editors) {
+//            var editor = editors[i]
+//            if(editor.hasChanges) { // TODO this assumes only one editor has changes
+//                editor.putChanges(function() {
+//                    callback()
+//                })
+//                return
+//            }
+//        }
+//        callback()
+//    }
 
     function refreshAllModules() {
         modulesModel.clear()
@@ -141,20 +136,6 @@ Rectangle {
                 fillMode: Image.PreserveAspectCrop
             }
 
-            //            ExperimentEdit {
-            //                id: experimenter
-            //                experimentData: root.experimentData
-            //                property: "users"
-            //                text: "Users"
-            //            }
-
-            ExperimentEdit {
-                id: project
-                experimentData: root.experimentData
-                property: "project"
-                text: "Project"
-            }
-
             ExperimentEdit {
                 experimentData: root.experimentData
                 property: "location"
@@ -195,6 +176,87 @@ Rectangle {
                     basePath: "modules/" + experimentData.id + "/" + model.id
                     onContentsChanged: {
                         console.log("Contents changed", JSON.stringify(contents))
+                    }
+                }
+            }
+
+            Button {
+                id: addModuleButton
+                x: 100
+                text: "Add module"
+                onClicked: {
+                    visible = false
+                    newModuleColumn.visible = true
+                }
+            }
+
+            Column {
+                id: newModuleColumn
+                x: 100
+                visible: false
+                spacing: 8
+
+                ComboBox {
+                    id: templateSelector
+                    property var currentItem: currentIndex > 0 ? model.get(currentIndex) : {key: "", value: "", name: ""}
+                    textRole: "key"
+                    displayText: "Template: " + currentText
+                    model: ListModel {
+                        ListElement { key: "Custom"; value: "{}" }
+                        ListElement { key: "Tracking"; name: "tracking"; value: '{"box_size": false, "wireless": false, "camera": false, "ttl_channel": false}' }
+                        ListElement { key: "Grating"; name: "grating";value: '{"directions": false, "duration": false, "distance": false}' }
+                    }
+                    onActivated: {
+                        nameField.text = model.get(index).name
+                    }
+                }
+
+                Row {
+                    spacing: 8
+                    Label {
+                        anchors.verticalCenter: nameField.verticalCenter
+                        text: "Name: "
+                    }
+
+                    TextField {
+                        id: nameField
+                    }
+
+                    Label {
+                        anchors.verticalCenter: nameField.verticalCenter
+                        color: "#ababab"
+                        text: "(Permanent: Cannot be changed)"
+                    }
+                }
+
+                Label {
+                    text: templateSelector.currentItem.value
+                }
+
+                Button {
+                    text: "Add"
+                    onClicked: {
+                        var selection = templateSelector.model.get(templateSelector.currentIndex)
+                        var value = selection.value
+                        var name = nameField.text
+                        if(!value || !name) {
+                            console.log("ERROR: Missing name or value")
+                            return
+                        }
+                        var target = "modules/" + experimentData.id + "/" + name
+                        var targetProperty = root.property
+                        var data = JSON.parse(value)
+                        Firebase.put(target, data, function(req) {
+                            console.log("Add module result:", req.status, req.responseText)
+                            templateSelector.currentIndex = 0
+                            templateSelector.enabled = true
+                            nameField.text = ""
+                            nameField.enabled = true
+                            addModuleButton.visible = true
+                            newModuleColumn.visible = false
+                        })
+                        templateSelector.enabled = false
+                        nameField.enabled = false
                     }
                 }
             }

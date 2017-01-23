@@ -11,6 +11,7 @@ Rectangle {
     id: leftMenu
 
     property string selectedState: menuView.currentItem ? menuView.currentItem.identifier : "experiments"
+    property string currentProject: "None selected"
     
     color: "#363636"
     
@@ -37,22 +38,24 @@ Rectangle {
             identifier: "users"
         }
     }
-    
-    TextField {
-        id: searchField
+
+    Label {
+        id: currentProjectText
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
             margins: 20
         }
-        placeholderText: "Search"
+        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        color: "#ababab"
+        text: "Project: " + currentProject
     }
     
     ListView {
         id: menuView
         anchors {
-            top: searchField.bottom
+            top: currentProjectText.bottom
             left: parent.left
             right: parent.right
             bottom: parent.bottom
