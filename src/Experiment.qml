@@ -175,9 +175,12 @@ Rectangle {
             }
 
             Text {
-                text: "Modules"
+                width: 200
                 font.pixelSize: 24
-                font.weight: Font.Bold
+                font.weight: Font.Light
+                color: "#434343"
+                horizontalAlignment: Text.AlignRight
+                text: "Modules"
             }
 
             Repeater {
@@ -186,6 +189,7 @@ Rectangle {
                     id: modulesModel
                 }
                 DictionaryEditor {
+                    x: 100
                     keyString: model.id
                     contents: model.data
                     basePath: "modules/" + experimentData.id + "/" + model.id
