@@ -3,7 +3,7 @@ import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
-import ExpipeBrowser 1.0
+//import ExpipeBrowser 1.0
 
 import "md5.js" as MD5
 

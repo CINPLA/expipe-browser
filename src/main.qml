@@ -5,9 +5,9 @@ import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 import Qt.labs.settings 1.0
 
-import ExpipeBrowser 1.0
-import QtWebView 1.1
-import QtWebSockets 1.0
+//import ExpipeBrowser 1.0
+//import QtWebView 1.1
+import QtWebEngine 1.0
 
 import "md5.js" as MD5
 import "firebase.js" as Firebase
@@ -121,7 +121,7 @@ QQC1.ApplicationWindow {
     //        visible: leftMenu.selectedState === "projects"
     //    }
 
-    WebView {
+    WebEngineView {
         id: webView
         anchors.fill: parent
         url: "http://cinpla.org/expipe/auth/"
