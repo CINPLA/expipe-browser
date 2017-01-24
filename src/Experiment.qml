@@ -163,7 +163,7 @@ Rectangle {
                     id: image
                     width: 64
                     height: 64
-                    source: ImageHash.get(experimentData.id, 64)
+                    source: ImageHash.experiment(experimentData, 64)
 
                     fillMode: Image.PreserveAspectCrop
                 }

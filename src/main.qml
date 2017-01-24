@@ -24,7 +24,6 @@ ApplicationWindow {
 
     onHasTokenChanged: {
         if(hasToken) {
-            experimentsView.retryConnection()
             projectsView.retryConnection()
         }
     }

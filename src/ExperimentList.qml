@@ -14,7 +14,6 @@ Rectangle {
     id: root
     property alias model: listView.model
     property alias currentIndex: listView.currentIndex
-    readonly property var currentData: listView.currentItem ? listView.currentItem.modelData : undefined
     
     color: "#efefef"
     border {
@@ -80,9 +79,7 @@ Rectangle {
                         height: width
                         fillMode: Image.PreserveAspectCrop
                         smooth: true
-                        source: {
-                            return ImageHash.get(modelData.id, 64)
-                        }
+                        source: ImageHash.action(modelData)
                     }
                 }
 

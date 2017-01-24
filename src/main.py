@@ -48,7 +48,7 @@ class EventSource(QObject):
     def reconnect(self):
         print("Reconnecting")
         if self._reply is not None:
-            #self._reply.deleteLater()
+            self._reply.abort()
             self._reply = None
         request = QNetworkRequest(self._url)
         request.setRawHeader(b"Accept", b"text/event-stream")
