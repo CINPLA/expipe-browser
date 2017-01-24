@@ -96,7 +96,7 @@ Rectangle {
         modulesLoadingText.visible = true
     }
 
-    color: "#fefefe"
+    color: "#fdfdfd"
     border {
         color: "#dedede"
         width: 1

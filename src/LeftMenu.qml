@@ -10,7 +10,7 @@ import "md5.js" as MD5
 Rectangle {
     id: leftMenu
 
-    property string selectedState: menuView.currentItem ? menuView.currentItem.identifier : "experiments"
+    property string selectedState: menuView.currentItem ? menuView.currentItem.identifier : "projects"
     property string currentProject: "None selected"
     
     color: "#363636"
@@ -18,7 +18,7 @@ Rectangle {
     ListModel {
         id: menuModel
         ListElement {
-            name: "Projects"
+            name: "Project"
             identifier: "projects"
         }
         ListElement {

@@ -38,7 +38,7 @@ Rectangle {
                 left: parent.left
                 leftMargin: 20
             }
-            text: listView.count + " experiments"
+            text: listView.count + " actions"
             color: "#787878"
             font.pixelSize: 14
         }

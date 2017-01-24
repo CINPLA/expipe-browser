@@ -133,5 +133,76 @@ Item {
             }
             clip: true
         }
+
+        Button {
+            anchors {
+                right: parent.right
+                bottom: parent.bottom
+                margins: 32
+            }
+            highlighted: true
+            text: "Create new"
+            onClicked: {
+                newDialog.open()
+            }
+        }
+    }
+
+    Dialog {
+        id: newDialog
+        title: "Create new project"
+        Column {
+            spacing: 8
+            Label {
+                text: "Provide an unique ID for your project.\n" +
+                      "This is permanent and cannot be changed later."
+            }
+            TextField {
+                id: newName
+            }
+            Label {
+                text: "Examples: 'mikkel_opto', 'perineural_v2_elimination'"
+            }
+        }
+        standardButtons: Dialog.Cancel | Dialog.Ok
+        onAccepted: {
+            if(!newName.text) {
+                console.log("ERROR: Name cannot be empty.")
+                return
+            }
+            var registered = (new Date()).toISOString()
+            var project = {
+                registered: registered
+            }
+            Firebase.put("projects/" + newName.text, project, function(req) {
+                console.log("Project created", req.responseText, req.statusText)
+            })
+        }
+    }
+
+    Rectangle {
+        id: projectView
+        anchors {
+            left: projectList.right
+            right: parent.right
+            top: parent.top
+            bottom: parent.bottom
+        }
+        color: "#fdfdfd"
+        Label {
+            anchors {
+                left: parent.left
+                top: parent.top
+                margins: 96
+            }
+            font.pixelSize: 24
+            font.weight: Font.Light
+            text: currentProject
+        }
+
+        Label {
+            anchors.centerIn: parent
+            text: "Projects cannot be edited yet"
+        }
     }
 }

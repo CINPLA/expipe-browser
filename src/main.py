@@ -26,6 +26,7 @@ class EventSource(QObject):
         self._type = ""
         self._data = ""
         self._manager = QNetworkAccessManager(self)
+        self._reply = None
 
     @pyqtProperty('QUrl')
     def url(self):
@@ -45,11 +46,15 @@ class EventSource(QObject):
         return self._type
         
     def reconnect(self):
+        print("Reconnecting")
+        if self._reply is not None:
+            #self._reply.deleteLater()
+            self._reply = None
         request = QNetworkRequest(self._url)
         request.setRawHeader(b"Accept", b"text/event-stream")
-        reply = self._manager.get(request)
-        reply.readyRead.connect(self.processReadyRead)
-        reply.finished.connect(self.processFinished)
+        self._reply = self._manager.get(request)
+        self._reply.readyRead.connect(self.processReadyRead)
+        self._reply.finished.connect(self.processFinished)
 
     def processReply(self, reply):
         pass
@@ -84,7 +89,7 @@ class EventSource(QObject):
         url = reply.attribute(QNetworkRequest.RedirectionTargetAttribute)
         if url:
             self.url = url
-            reply.deleteLater()
+        #reply.deleteLater()
             
 
 class Clipboard(QObject):
