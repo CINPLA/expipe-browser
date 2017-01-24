@@ -104,7 +104,7 @@ Rectangle {
 
     EventSource {
         id: eventSource
-        url: experimentData ? Firebase.server_url + "modules/" + experimentData.id + ".json?auth=" + Firebase.auth : ""
+        url: experimentData ? Firebase.server_url + "modules/" + experimentData.project + "/" + experimentData.id + ".json?auth=" + Firebase.auth : ""
         onEventReceived: {
             console.log("Received event", type, data)
             var d = JSON.parse(data)
@@ -129,7 +129,7 @@ Rectangle {
         Button {
             id: codeButton
             property string snippet: "from expipe.io import find_action\n" +
-                                     "action = find_action('" + experimentData.id + "')\n" +
+                                     "action = expipe.io.get_action(project='" + experimentData.project + "', action='" + experimentData.id + "')\n" +
                                      "# continue working with action"
             anchors {
                 right: parent.right
@@ -301,7 +301,7 @@ Rectangle {
                         property var currentItem: currentIndex > -1 ? model.get(currentIndex) : {key: "", value: "", name: ""}
                         textRole: "key"
                         model: ListModel {
-                            ListElement { key: "None"; value: "{}" }
+                            ListElement { key: "None"; value: '{"value": false}' }
                             ListElement { key: "Tracking"; name: "tracking"; value: '{"box_size": false, "wireless": false, "camera": false, "ttl_channel": false}' }
                             ListElement { key: "Grating"; name: "grating";value: '{"directions": false, "duration": false, "distance": false}' }
                         }
@@ -365,19 +365,13 @@ Rectangle {
                         console.log("ERROR: Missing name or value")
                         return
                     }
-                    var target = "modules/" + experimentData.id + "/" + name
+                    var target = "modules/" + experimentData.project + "/" + experimentData.id + "/" + name
                     var targetProperty = root.property
                     var data = JSON.parse(value)
                     Firebase.put(target, data, function(req) {
                         console.log("Add module result:", req.status, req.responseText)
                         templateSelector.currentIndex = 0
-                        templateSelector.enabled = true
-                        nameField.text = ""
-                        nameField.enabled = true
-                        newModuleColumn.visible = false
                     })
-                    templateSelector.enabled = false
-                    nameField.enabled = false
                 }
             }
 

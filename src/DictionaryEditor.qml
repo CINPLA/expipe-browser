@@ -264,7 +264,7 @@ Item {
                         anchors {
                             verticalCenter: parent.verticalCenter
                         }
-                        text: column.keyString + ":"
+                        text: column.keyString + (isObject ? "" : ":")
                         color: "#434343"
                     }
 
