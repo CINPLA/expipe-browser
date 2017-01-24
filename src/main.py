@@ -85,10 +85,20 @@ class EventSource(QObject):
         if url:
             self.url = url
             reply.deleteLater()
+            
+
+class Clipboard(QObject):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    
+    @pyqtSlot(str)
+    def setText(self, text):
+        QApplication.clipboard().setText(text)
 
 
 app = QApplication(sys.argv)
 qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "EventSource")
+qmlRegisterType(Clipboard, "ExpipeBrowser", 1, 0, "Clipboard")
 QtWebEngine.initialize()
 engine = QQmlApplicationEngine()
 engine.load(QUrl("main.qml"))

@@ -8,13 +8,13 @@ import QtQuick.Layouts 1.1
 
 import "md5.js" as MD5
 import "firebase.js" as Firebase
+import "imagehash.js" as ImageHash
 
 Rectangle {
     id: root
     property alias model: listView.model
     property alias currentIndex: listView.currentIndex
     readonly property var currentData: listView.currentItem ? listView.currentItem.modelData : undefined
-    readonly property string currentImageSource: listView.currentItem ? listView.currentItem.imageSource : ""
     
     color: "#efefef"
     border {
@@ -56,7 +56,6 @@ Rectangle {
             anchors.fill: parent
             delegate: ItemDelegate {
                 property variant modelData: model
-                property string imageSource: "http://gravatar.com/avatar/" + MD5.md5("s@dragly.com")
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -80,7 +79,10 @@ Rectangle {
                         width: parent.height * 0.6
                         height: width
                         fillMode: Image.PreserveAspectCrop
-                        source: imageSource
+                        smooth: true
+                        source: {
+                            return ImageHash.get(modelData.id, 64)
+                        }
                     }
                 }
 
@@ -100,7 +102,17 @@ Rectangle {
                     }
                     Text {
                         color: "#545454"
-                        text: model.registered
+                        text: {
+                            var results = []
+                            if(model.type) {
+                                results.push(model.type)
+                            }
+                            if(model.datetime) {
+                                var date = new Date(model.datetime)
+                                results.push(date.toISOString().substring(0, 10))
+                            }
+                            return results.join(", ")
+                        }
                         font.pixelSize: 11
                     }
                 }

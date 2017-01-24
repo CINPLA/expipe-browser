@@ -1,5 +1,4 @@
 import QtQuick 2.4
-import QtQuick.Controls 1.4 as QQC1
 import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
@@ -12,7 +11,7 @@ import QtWebEngine 1.0
 import "md5.js" as MD5
 import "firebase.js" as Firebase
 
-QQC1.ApplicationWindow {
+ApplicationWindow {
     id: root
 
     visible: true
@@ -66,7 +65,7 @@ QQC1.ApplicationWindow {
     ExperimentsView {
         id: experimentsView
         anchors.fill: viewArea
-        visible: leftMenu.selectedState === "experiments"
+        visible: leftMenu.selectedState === "actions"
         currentProject: projectsView.currentProject
     }
 

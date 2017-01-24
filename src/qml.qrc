@@ -25,5 +25,6 @@
         <file>ListComboEdit.qml</file>
         <file>DictionaryEditor.qml</file>
         <file>grid.png</file>
+        <file>imagehash.js</file>
     </qresource>
 </RCC>

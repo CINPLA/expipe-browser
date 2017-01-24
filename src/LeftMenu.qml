@@ -22,77 +22,103 @@ Rectangle {
             identifier: "projects"
         }
         ListElement {
-            name: "Experiments"
-            identifier: "experiments"
+            name: "Actions"
+            identifier: "actions"
+            needsProject: true
         }
         ListElement {
             name: "Subjects"
             identifier: "subjects"
+            needsProject: true
         }
         ListElement {
             name: "Users"
             identifier: "users"
+            needsProject: true
         }
         ListElement {
-            name: "Analyses"
-            identifier: "users"
+            name: "Templates"
+            identifier: "templates"
+        }
+    }
+    
+    Column {
+        id: menuView
+        property int currentIndex: 0
+        property var currentItem: repeater.itemAt(currentIndex)
+        anchors {
+            left: parent.left
+            right: parent.right
+            verticalCenter: parent.verticalCenter
+        }
+        Repeater {
+            id: repeater
+            model: menuModel
+            delegate: Item {
+                property string identifier: model.identifier
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                }
+                height: 36
+                Rectangle {
+                    anchors.fill: parent
+                    color: "white"
+                    opacity: 0.1
+                    visible: index === menuView.currentIndex
+                }
+                Text {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        left: parent.left
+                        right: parent.right
+                        leftMargin: 24
+                        rightMargin: 24
+                    }
+
+                    color: itemArea.enabled ? "white" : "#ababab"
+                    text: name
+                }
+                MouseArea {
+                    id: itemArea
+                    enabled: currentProject != "" || !needsProject
+                    anchors.fill: parent
+                    onClicked: {
+                        menuView.currentIndex = index
+                    }
+                }
+            }
+            clip: true
         }
     }
 
-    Label {
-        id: currentProjectText
+    Column {
         anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            margins: 20
-        }
-        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-        color: "#ababab"
-        text: "Project: " + currentProject
-    }
-    
-    ListView {
-        id: menuView
-        anchors {
-            top: currentProjectText.bottom
             left: parent.left
             right: parent.right
             bottom: parent.bottom
-            topMargin: 24
-            //                    margins: 20
+            margins: 20
+            bottomMargin: 48
         }
-        model: menuModel
-        delegate: Item {
-            property string identifier: model.identifier
+        spacing: 8
+        Label {
             anchors {
                 left: parent.left
                 right: parent.right
             }
-            height: 36
-            Text {
-                anchors {
-                    verticalCenter: parent.verticalCenter
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: 24
-                    rightMargin: 24
-                }
-                
-                color: "white"
-                text: name
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    menuView.currentIndex = index
-                }
-            }
+
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            color: "#ababab"
+            text: "Project:"
         }
-        highlight: Rectangle {
-            color: "white"
-            opacity: 0.1
+        Label {
+            anchors {
+                left: parent.left
+                right: parent.right
+            }
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            color: "#dedede"
+            text: currentProject
         }
-        clip: true
     }
 }
