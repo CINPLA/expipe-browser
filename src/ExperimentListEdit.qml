@@ -39,49 +39,14 @@ Item {
     height: row.height
     width: row.width
 
-    onExperimentDataChanged: {
-        if(!experimentData) {
-            return
-        }
-        console.log("Experiment data changed", JSON.stringify(experimentData[root.property]))
-    }
-
     onAutoCompletePathChanged: {
         resetComboModel()
     }
 
-    Component.onCompleted: {
-        resetComboModel()
-    }
-
-    function putChanges() {
-        console.log("Not implemented!")
-    }
-
     function reset() {
-        console.log("Resetting")
-        console.log("Experiment data", JSON.stringify(experimentData[root.property]))
-        console.log("Model", JSON.stringify(model))
         root.readOnly = false
         root.inputColor = root.readyColor
     }
-
-    function resetComboModel() {
-        //        Firebase.get(autoCompletePath, function(xhr) {
-        //            console.log("Resetting combo model!")
-        //            var data = JSON.parse(xhr.responseText)
-        //            var newModel = []
-        //            newModel.push("")
-        //            for(var i in data) {
-        //                newModel.push(i)
-        //            }
-        //            console.log(JSON.stringify(newModel))
-        //            comboModel = newModel
-        //        })
-    }
-
-
-
 
     MouseArea {
         id: mouseArea
@@ -149,18 +114,6 @@ Item {
                                         putChanges(root.reset)
                                     }
                                 }
-
-                                //            ComboBox {
-                                //                visible: root.autoCompletePath != ""
-                                //                model: root.comboModel
-                                //                onCurrentTextChanged: {
-                                //                    if(currentText === "") {
-                                //                        return
-                                //                    }
-                                //                    textInput.text = currentText
-                                //                    putChanges(root.reset)
-                                //                }
-                                //            }
 
                                 Text {
                                     text: "x"
