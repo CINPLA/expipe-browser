@@ -14,12 +14,6 @@ Item {
 
     property string currentProject
 
-
-
-    onCurrentProjectChanged: {
-        experimentLoader.source = ""
-    }
-
     ExperimentList {
         id: experimentList
         anchors {

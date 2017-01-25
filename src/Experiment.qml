@@ -13,7 +13,6 @@ Rectangle {
     id: root
 
     property var experimentData
-    property var modulesEventSource
 
     property var modules: {
         return {}
@@ -69,16 +68,6 @@ Rectangle {
         refreshModules(path)
     }
 
-    function errorReceived() {
-        console.log("Got module error")
-    }
-
-    Component.onDestruction: {
-        if(modulesEventSource) {
-            modulesEventSource.close()
-        }
-    }
-
     color: "#fdfdfd"
     border {
         color: "#dedede"
@@ -86,9 +75,9 @@ Rectangle {
     }
 
     EventSource {
-        id: eventSource
         url: experimentData ? Firebase.server_url + "modules/" + experimentData.project + "/" + experimentData.id + ".json?auth=" + Firebase.auth : ""
         onUrlChanged: {
+            modulesModel.clear()
             modulesLoadingText.visible = true
         }
 
@@ -108,7 +97,6 @@ Rectangle {
 
     Flickable {
         anchors.fill: parent
-        visible: experimentData ? true : false
         contentHeight: container.height + 360
         ScrollBar.vertical: ScrollBar {}
 

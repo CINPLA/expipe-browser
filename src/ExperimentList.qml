@@ -19,15 +19,25 @@ Rectangle {
     }
     property string requestedId
     property string currentProject
-    property var currentData: {
-        trigger // hack to trigger change on deep changes in listModel
-        return listModel.get(currentIndex)
+    property var currentData
+    property bool trigger: false
+    property bool bindingEnabled: true
+
+    Binding {
+        target: root
+        property: "currentData"
+        when: listView.currentItem && bindingEnabled
+        value: {
+            trigger
+            return experiments[listView.currentItem.key]
+        }
     }
-    property bool trigger
 
     onCurrentProjectChanged: {
         experiments = {}
-        listModel.clear()
+        listModel.clear() // TODO, see if this is needed
+        searchModel.clear()
+//        refresh()
     }
     
     color: "#efefef"
@@ -37,14 +47,6 @@ Rectangle {
     }
 
     function refresh() {
-        trigger = !trigger
-        console.log("Refreshing", requestedId)
-        var previousId
-        //        if(requestedId !== "") {
-        //            previousId = requestedId
-        //        } else if(experimentList.currentData) {
-        //            previousId = experimentList.currentData.id
-        //        }
         listModel.clear()
         for(var id in experiments) {
             var experiment = experiments[id]
@@ -55,16 +57,7 @@ Rectangle {
             experiment.project = currentProject
             listModel.append(experiment)
         }
-
-        // set the correct index back
-        if(previousId) {
-            for(var i = 0; i < listModel.count; i++) {
-                if(listModel.get(i).id === previousId) {
-                    currentIndex = i
-                    break
-                }
-            }
-        }
+        refreshSearchModel()
     }
 
     function refreshOne(id) {
@@ -84,25 +77,53 @@ Rectangle {
         refresh()
     }
 
-    function errorReceived() {
-        console.log("View received error")
+    function refreshSearchModel() {
+        bindingEnabled = false
+        var previousId
+        if(currentData) {
+            previousId = currentData.id
+        }
+        searchModel.clear()
+        for(var i = 0; i < listModel.count; i++) {
+            var experiment = listModel.get(i)
+            var found = true
+            var needle = searchField.text
+            if(needle !== "") {
+                var haystack = JSON.stringify(experiment)
+                if(haystack.indexOf(needle) > -1) {
+                    found = true
+                } else {
+                    found = false
+                }
+            }
+            if(found) {
+                searchModel.append({key: experiment.id})
+            }
+        }
+        for(var i = 0; i < searchModel.count; i++) {
+            if(searchModel.get(i).key === previousId) {
+                currentIndex = i
+            }
+        }
+        bindingEnabled = true
     }
 
     ListModel {
         id: listModel
     }
 
+    ListModel {
+        id: searchModel
+    }
 
     EventSource {
         id: eventSource
         url: Firebase.server_url + "actions/" + currentProject + "/.json?auth=" + Firebase.auth
         onEventReceived: {
-            console.log("Received event", type, data)
             var d = JSON.parse(data)
             switch(type) {
             case "put":
                 DictHelper.put(experiments, d.path, d.data)
-                console.log("Experiments", JSON.stringify(experiments))
                 if(d.path === "/") {
                     refresh()
                 } else {
@@ -111,7 +132,6 @@ Rectangle {
                 break
             case "patch":
                 DictHelper.patch(experiments, d.path, d.data)
-                console.log("Got patch on", d.path)
                 if(d.path === "/") {
                     refresh()
                 } else {
@@ -129,29 +149,32 @@ Rectangle {
             top: parent.top
         }
         color: "#cecece"
-        height: stuffColumn.height + 16
+        height: searchField.height + 24
 
-        Column {
-            id: stuffColumn
+        Text {
             anchors {
                 left: parent.left
+                verticalCenter: parent.verticalCenter
+                margins: 16
+            }
+            color: "#787878"
+
+            text: listView.count + " actions"
+        }
+
+        TextField {
+            id: searchField
+            anchors {
                 right: parent.right
-                top: parent.top
+                verticalCenter: parent.verticalCenter
                 margins: 16
             }
 
-            TextField {
-                onTextChanged: {
+            placeholderText: "Search"
 
-                }
+            onTextChanged: {
+                refreshSearchModel()
             }
-        
-            Text {
-                text: listView.count + " actions"
-                color: "#787878"
-                font.pixelSize: 14
-            }
-
         }
     }
     
@@ -166,14 +189,16 @@ Rectangle {
             id: listView
             anchors.fill: parent
             clip: true
-            model: listModel
+            model: searchModel
+
             highlightMoveDuration: 0
             highlight: Rectangle {
                 color: "black"
                 opacity: 0.1
             }
             delegate: ItemDelegate {
-                property variant modelData: model
+                property string key: model.key
+                property var modelData: experiments[key]
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -211,18 +236,18 @@ Rectangle {
                     }
                     Text {
                         color: "#121212"
-                        text: model.id
+                        text: modelData.id
                         font.pixelSize: 12
                     }
                     Text {
                         color: "#545454"
                         text: {
                             var results = []
-                            if(model.type) {
-                                results.push(model.type)
+                            if(modelData.type) {
+                                results.push(modelData.type)
                             }
-                            if(model.datetime) {
-                                var date = new Date(model.datetime)
+                            if(modelData.datetime) {
+                                var date = new Date(modelData.datetime)
                                 results.push(date.toISOString().substring(0, 10))
                             }
                             return results.join(", ")
