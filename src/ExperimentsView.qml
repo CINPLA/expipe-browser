@@ -13,109 +13,11 @@ Item {
     id: root
 
     property string currentProject
-    property string requestedId
 
-    property var experiments: {
-        return {}
-    }
 
-    function refresh() {
-        console.log("Refreshing", requestedId)
-        var previousId
-        //        if(requestedId !== "") {
-        //            previousId = requestedId
-        //        } else if(experimentList.currentData) {
-        //            previousId = experimentList.currentData.id
-        //        }
-        listModel.clear()
-        for(var id in experiments) {
-            var experiment = experiments[id]
-            if(!experiment) {
-                continue
-            }
-            experiment.id = id
-            experiment.project = currentProject
-            listModel.append(experiment)
-        }
-
-        // set the correct index back
-        if(previousId) {
-            for(var i = 0; i < listModel.count; i++) {
-                if(listModel.get(i).id === previousId) {
-                    experimentList.currentIndex = i
-                    break
-                }
-            }
-        }
-        if(experimentList.currentIndex > -1) {
-            if(experimentLoader.item) {
-                experimentLoader.item.experimentData = listModel.get(experimentList.currentIndex)
-            }
-        }
-    }
-
-    function refreshOne(id) {
-        for(var i = 0; i < listModel.count; i++) {
-            var item = listModel.get(i)
-            if(item.id === id) {
-                if(experiments[id]) {
-                    console.log("Refreshing", i, id)
-                    listModel.set(i, experiments[id])
-                } else {
-                    listModel.remove(i)
-                }
-                if(experimentList.currentIndex === i) {
-                    if(experimentLoader.item) {
-                        experimentLoader.item.experimentData = listModel.get(experimentList.currentIndex)
-                    }
-                }
-                return
-            }
-        }
-        refresh()
-    }
-
-    function errorReceived() {
-        console.log("View received error")
-    }
 
     onCurrentProjectChanged: {
         experimentLoader.source = ""
-        experiments = {}
-        listModel.clear()
-    }
-
-    ListModel {
-        id: listModel
-    }
-
-
-    EventSource {
-        id: eventSource
-        url: Firebase.server_url + "actions/" + currentProject + "/.json?auth=" + Firebase.auth
-        onEventReceived: {
-            console.log("Received event", type, data)
-            var d = JSON.parse(data)
-            switch(type) {
-            case "put":
-                DictHelper.put(experiments, d.path, d.data)
-                console.log("Experiments", JSON.stringify(experiments))
-                if(d.path === "/") {
-                    refresh()
-                } else {
-                    refreshOne(d.path.split("/")[1])
-                }
-                break
-            case "patch":
-                DictHelper.patch(experiments, d.path, d.data)
-                console.log("Got patch on", d.path)
-                if(d.path === "/") {
-                    refresh()
-                } else {
-                    refreshOne(d.path.split("/")[1])
-                }
-            }
-        }
     }
 
     ExperimentList {
@@ -125,26 +27,14 @@ Item {
             top: parent.top
             bottom: parent.bottom
         }
-        model: listModel
         width: 400
+        currentProject: root.currentProject
+    }
 
-        onCurrentIndexChanged: {
-            // NOTE Why use a loader? Because it is easier that testing for experimentData being valid in Experiment.qml
-            experimentLoader.source = ""
-            experimentLoader.setSource("Experiment.qml", {experimentData: listModel.get(currentIndex)})
-        }
-
-        Button {
-            anchors {
-                right: parent.right
-                bottom: parent.bottom
-                margins: 32
-            }
-            highlighted: true
-            text: "Create new"
-            onClicked: {
-                newDialog.open()
-            }
+    Component {
+        id: experimentComponent
+        Experiment {
+            experimentData: experimentList.currentData
         }
     }
 
@@ -156,52 +46,6 @@ Item {
             top: parent.top
             bottom: parent.bottom
         }
-    }
-
-    Dialog {
-        id: newDialog
-        title: "Create new action"
-        Column {
-            spacing: 8
-            Label {
-                text: "Provide an unique ID for your action.\n" +
-                      "A good ID is easy to remember and follows a naming scheme."
-            }
-            TextField {
-                id: newName
-                text: {
-                    return new Date().toISOString().slice(0, 10)
-                }
-            }
-            Label {
-                text: "Examples: '2016-01-12_1', 'bobby_1_init', 'lucia_surgery'"
-            }
-        }
-        standardButtons: Dialog.Cancel | Dialog.Ok
-        onAccepted: {
-            if(!currentProject) {
-                console.log("ERROR: Current project not set.")
-                return
-            }
-
-            if(!newName.text) {
-                console.log("ERROR: Name cannot be empty.")
-                return
-            }
-            var registered = (new Date()).toISOString()
-            var experiment = {
-                registered: registered
-            }
-            Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
-                var experiment = JSON.parse(req.responseText)
-                for(var i = 0; i < listModel.count; i++) {
-                    if(listModel.get(i).id === experiment.name) {
-                        experimentList.currentIndex = i
-                        return
-                    }
-                }
-                requestedId = experiment.name
-            })
-        }
+        sourceComponent: experimentList.currentIndex > -1 ? experimentComponent : undefined
     }
 }
