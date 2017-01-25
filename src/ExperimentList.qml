@@ -8,7 +8,6 @@ import QtQuick.Layouts 1.1
 
 import "md5.js" as MD5
 import "firebase.js" as Firebase
-import "imagehash.js" as ImageHash
 
 Rectangle {
     id: root
@@ -73,13 +72,11 @@ Rectangle {
                         bottom: parent.bottom
                     }
                     width: height
-                    Image {
+                    Identicon {
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
-                        fillMode: Image.PreserveAspectCrop
-                        smooth: true
-                        source: ImageHash.action(modelData)
+                        action: modelData
                     }
                 }
 

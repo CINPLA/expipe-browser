@@ -8,7 +8,6 @@ import ExpipeBrowser 1.0
 import "md5.js" as MD5
 import "firebase.js" as Firebase
 import "dicthelper.js" as DictHelper
-import "imagehash.js" as ImageHash
 
 Rectangle {
     id: root
@@ -34,6 +33,7 @@ Rectangle {
     //    }
 
     function refreshAllModules() {
+        console.log("REFRESH ALL MODULES!!!!!!!!!")
         modulesModel.clear()
         for(var id in modules) {
             if(!modules[id]) {
@@ -48,6 +48,7 @@ Rectangle {
     }
 
     function refreshModules(path) {
+        console.log("PATH IS", path)
         if(path === "/") {
             refreshAllModules()
             return
@@ -73,11 +74,13 @@ Rectangle {
     }
 
     function putReceived(path, data) {
+        console.log("MODUELS RECEIVEIED PUTSSS")
         DictHelper.put(modules, path, data)
         refreshModules(path)
     }
 
     function patchReceived(path, data) {
+        console.log("MODUELS RECEIVEIED PATATACH")
         DictHelper.patch(modules, path, data)
         refreshModules(path)
     }
@@ -92,10 +95,6 @@ Rectangle {
         }
     }
 
-    onExperimentDataChanged: {
-        modulesLoadingText.visible = true
-    }
-
     color: "#fdfdfd"
     border {
         color: "#dedede"
@@ -105,6 +104,10 @@ Rectangle {
     EventSource {
         id: eventSource
         url: experimentData ? Firebase.server_url + "modules/" + experimentData.project + "/" + experimentData.id + ".json?auth=" + Firebase.auth : ""
+        onUrlChanged: {
+            modulesLoadingText.visible = true
+        }
+
         onEventReceived: {
             console.log("Received event", type, data)
             var d = JSON.parse(data)
@@ -159,13 +162,11 @@ Rectangle {
                 x: 140
                 spacing: 20
 
-                Image {
+                Identicon {
                     id: image
                     width: 64
                     height: 64
-                    source: ImageHash.experiment(experimentData, 64)
-
-                    fillMode: Image.PreserveAspectCrop
+                    action: experimentData
                 }
 
                 Label {

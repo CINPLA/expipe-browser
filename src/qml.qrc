@@ -25,6 +25,9 @@
         <file>ListComboEdit.qml</file>
         <file>DictionaryEditor.qml</file>
         <file>grid.png</file>
-        <file>imagehash.js</file>
+        <file>SettingsView.qml</file>
+        <file>Identicon.qml</file>
+        <file>qmldir</file>
+        <file>Style.qml</file>
     </qresource>
 </RCC>

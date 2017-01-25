@@ -5,8 +5,6 @@ import QtQuick.Layouts 1.1
 
 //import ExpipeBrowser 1.0
 
-import "md5.js" as MD5
-
 Rectangle {
     id: leftMenu
 
@@ -39,6 +37,10 @@ Rectangle {
         ListElement {
             name: "Templates"
             identifier: "templates"
+        }
+        ListElement {
+            name: "Settings"
+            identifier: "settings"
         }
     }
     
@@ -111,6 +113,12 @@ Rectangle {
             color: "#ababab"
             text: "Project:"
         }
+        Identicon {
+            height: 64
+            width: 64
+            project: currentProject
+        }
+
         Label {
             anchors {
                 left: parent.left

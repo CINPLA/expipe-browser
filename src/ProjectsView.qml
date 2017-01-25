@@ -5,7 +5,6 @@ import QtQuick.Layouts 1.1
 
 import ExpipeBrowser 1.0
 
-import "md5.js" as MD5
 import "firebase.js" as Firebase
 import "dicthelper.js" as DictHelper
 
@@ -66,7 +65,7 @@ Item {
                 left: parent.left
                 leftMargin: 20
             }
-            text: "Current project:"
+            text: projectsModel.length + " projects"
             color: "#787878"
             font.pixelSize: 14
         }
@@ -104,8 +103,7 @@ Item {
                 }
                 height: 64
 
-                Column {
-                    spacing: 10
+                Row {
                     anchors {
                         margins: 12
                         left: parent.left
@@ -113,8 +111,14 @@ Item {
                         top: parent.top
                         bottom: parent.bottom
                     }
+                    spacing: 10
+                    Identicon {
+                        width: height
+                        height: parent.height
+                        project: modelData.id
+                    }
                     Text {
-                        color: "#545454"
+                        color: "#121212"
                         text: modelData.id
                         font.pixelSize: 14
                     }

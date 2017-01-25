@@ -28,7 +28,8 @@ DISTFILES += \
     conanfile.txt \
     index.html \
     main.css \
-    qtquickcontrols2.conf
+    qtquickcontrols2.conf \
+    main.py
 
 HEADERS += \
 #    experimentmodel.h \

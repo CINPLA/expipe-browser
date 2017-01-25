@@ -9,6 +9,32 @@
 #include <QSqlError>
 #include <QtWebEngine/QtWebEngine>
 
+class MyNAMFactory : public QQmlNetworkAccessManagerFactory
+{
+public:
+    virtual QNetworkAccessManager *create(QObject *parent);
+};
+
+QNetworkAccessManager *MyNAMFactory::create(QObject *parent)
+{
+    QNetworkAccessManager *nam = new QNetworkAccessManager(parent);
+    auto *cache = new QNetworkDiskCache(parent);
+    cache->setCacheDirectory("/tmp/lol/");
+    nam->setCache(cache);
+    return nam;
+}
+
+//int main(int argc, char **argv)
+//{
+//    QGuiApplication app(argc, argv);
+//    QQuickView view;
+//    view.engine()->setNetworkAccessManagerFactory(new MyNAMFactory);
+//    view.setSource(QUrl("qrc:///main.qml"));
+//    view.show();
+
+//    return app.exec();
+//}
+
 int main(int argc, char *argv[])
 {
     //    qmlRegisterType<ExperimentModel>("CinplaBrowser", 1, 0, "ExperimentModel");
@@ -30,6 +56,7 @@ int main(int argc, char *argv[])
     QtWebEngine::initialize();
 
     QQmlApplicationEngine engine;
+    engine.setNetworkAccessManagerFactory(new MyNAMFactory);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     return app.exec();
