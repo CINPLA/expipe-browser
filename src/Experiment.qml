@@ -19,21 +19,7 @@ Rectangle {
         return {}
     }
 
-    //    function finishEditing(callback) {
-    //        for(var i in editors) {
-    //            var editor = editors[i]
-    //            if(editor.hasChanges) { // TODO this assumes only one editor has changes
-    //                editor.putChanges(function() {
-    //                    callback()
-    //                })
-    //                return
-    //            }
-    //        }
-    //        callback()
-    //    }
-
     function refreshAllModules() {
-        console.log("REFRESH ALL MODULES!!!!!!!!!")
         modulesModel.clear()
         for(var id in modules) {
             if(!modules[id]) {
@@ -74,13 +60,11 @@ Rectangle {
     }
 
     function putReceived(path, data) {
-        console.log("MODUELS RECEIVEIED PUTSSS")
         DictHelper.put(modules, path, data)
         refreshModules(path)
     }
 
     function patchReceived(path, data) {
-        console.log("MODUELS RECEIVEIED PATATACH")
         DictHelper.patch(modules, path, data)
         refreshModules(path)
     }
@@ -109,7 +93,6 @@ Rectangle {
         }
 
         onEventReceived: {
-            console.log("Received event", type, data)
             var d = JSON.parse(data)
             if(type == "put") {
                 putReceived(d.path, d.data)
@@ -391,7 +374,6 @@ Rectangle {
                     }
                 }
             }
-
         }
     }
 
