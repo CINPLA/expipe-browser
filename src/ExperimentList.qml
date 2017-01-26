@@ -20,13 +20,13 @@ Rectangle {
     }
     property string requestedId
     property string currentProject
-    property var currentData: listView.currentItem ? listView.currentItem.modelData : undefined
+    property var currentData
     property bool trigger: false
     property bool bindingEnabled: true
 
     onCurrentProjectChanged: {
         experiments = {}
-//        searchModel.clear()
+        searchModel.clear()
     }
     
     color: "#efefef"
@@ -35,57 +35,58 @@ Rectangle {
         width: 1
     }
 
-//    Binding {
-//        target: root
-//        property: "currentData"
-//        when: listView.currentItem && bindingEnabled
-//        value: {
-//            trigger
-//            return eventSource.get(listView.currentItem.index)
-//        }
-//    }
+    Binding {
+        target: root
+        property: "currentData"
+        when: listView.currentItem && bindingEnabled
+        value: {
+            trigger
+            return listView.currentItem ? listView.currentItem.modelData : undefined
+        }
+    }
 
-//    function refreshSearchModel() {
-//        bindingEnabled = false
-//        var previousId
-//        if(currentData) {
-//            previousId = currentData.id
-//        }
-//        searchModel.clear()
-//        for(var i = 0; i < eventSource.count; i++) {
-//            var experiment = eventSource.get(i)
-//            var found = true
-//            var needle = searchField.text
-//            if(needle !== "") {
-//                var haystack = JSON.stringify(experiment)
-//                if(haystack.indexOf(needle) > -1) {
-//                    found = true
-//                } else {
-//                    found = false
-//                }
-//            }
-//            if(found) {
-//                searchModel.append({index: i, key: experiment.id})
-//            }
-//        }
-//        for(var i = 0; i < searchModel.count; i++) {
-//            if(searchModel.get(i).key === previousId) {
-//                currentIndex = i
-//            }
-//        }
-//        bindingEnabled = true
-//    }
+    function refreshSearchModel() {
+        bindingEnabled = false
+        var previousId
+        if(listView.currentItem) {
+            previousId = listView.currentItem.key
+        }
+        searchModel.clear()
+        for(var i = 0; i < eventSource.rowCount(); i++) {
+            var experiment = eventSource.data(eventSource.index(i, 0), 258)
+            var key = eventSource.data(eventSource.index(i, 0), 257)
+            var found = true
+            var needle = searchField.text
+            if(needle !== "") {
+                var haystack = JSON.stringify(experiment)
+                if(haystack.indexOf(needle) > -1) {
+                    found = true
+                } else {
+                    found = false
+                }
+            }
+            if(found) {
+                searchModel.append({index: i, key: key})
+            }
+        }
+        for(var i = 0; i < searchModel.count; i++) {
+            if(searchModel.get(i).key === previousId) {
+                currentIndex = i
+            }
+        }
+        bindingEnabled = true
+    }
 
-//    ListModel {
-//        id: searchModel
-//    }
+    ListModel {
+        id: searchModel
+    }
 
     EventSource {
         id: eventSource
         path: "actions/" + currentProject
         includeHelpers: true
         onPutReceived: {
-//            refreshSearchModel()
+            refreshSearchModel()
         }
     }
     
@@ -121,7 +122,7 @@ Rectangle {
             placeholderText: "Search"
 
             onTextChanged: {
-//                refreshSearchModel()
+                refreshSearchModel()
             }
         }
     }
@@ -137,7 +138,7 @@ Rectangle {
             id: listView
             anchors.fill: parent
             clip: true
-            model: eventSource
+            model: searchModel
 
             highlightMoveDuration: 0
             highlight: Rectangle {
@@ -145,8 +146,9 @@ Rectangle {
                 opacity: 0.1
             }
             delegate: ItemDelegate {
+                readonly property var index: model.index
                 readonly property var key: model.key
-                readonly property var modelData: model.contents
+                readonly property var modelData: eventSource.data(eventSource.index(index, 0), 258)
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -165,7 +167,7 @@ Rectangle {
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
-                        action: contents
+                        action: modelData
                     }
                 }
 
@@ -191,7 +193,12 @@ Rectangle {
                                 results.push(modelData.type)
                             }
                             if(modelData.datetime) {
-                                var date = new Date(modelData.datetime)
+                                try {
+                                    var date = new Date(modelData.datetime)
+                                } catch (e) {
+                                    var date = new Date()
+                                }
+
                                 results.push(date.toISOString().substring(0, 10))
                             }
                             return results.join(", ")

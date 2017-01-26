@@ -11,7 +11,7 @@ import os
 import json
 from collections import OrderedDict
 
-from PyQt5.QtCore import Qt, pyqtProperty, QObject, QUrl, pyqtSignal, pyqtSlot, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex
+from PyQt5.QtCore import Qt, pyqtProperty, QObject, QUrl, pyqtSignal, pyqtSlot, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager, QNetworkDiskCache
@@ -35,6 +35,8 @@ class EventSource(QAbstractListModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        print(self.contents_role)
 
         self._path = ""
         self.contents = {}
@@ -176,10 +178,16 @@ class EventSource(QAbstractListModel):
     def data(self, index=QModelIndex(), role=0):
         if role == self.key_role:
             key_list = list(self.contents.keys())
-            return key_list[index.row()]
+            try:
+                return key_list[index.row()]
+            except IndexError:
+                return ""
         elif role == self.contents_role:
             value_list = list(self.contents.values())
-            return value_list[index.row()]
+            try:
+                return value_list[index.row()]
+            except IndexError:
+                return QVariant()
         else:
             return QVariant()
 
