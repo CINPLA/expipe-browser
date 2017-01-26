@@ -71,17 +71,17 @@ ApplicationWindow {
         visible: leftMenu.selectedState === "projects"
     }
 
-    ExperimentsView {
-        id: experimentsView
-        anchors.fill: viewArea
-        visible: leftMenu.selectedState === "actions"
-        currentProject: projectsView.currentProject
-    }
+//    ExperimentsView {
+//        id: experimentsView
+//        anchors.fill: viewArea
+//        visible: leftMenu.selectedState === "actions"
+//        currentProject: projectsView.currentProject
+//    }
 
-    SettingsView {
-        anchors.fill: viewArea
-        visible: leftMenu.selectedState === "settings"
-    }
+//    SettingsView {
+//        anchors.fill: viewArea
+//        visible: leftMenu.selectedState === "settings"
+//    }
 
     // TODO replace this entire WebView + Timer solution with a PyRebase wrapper
 

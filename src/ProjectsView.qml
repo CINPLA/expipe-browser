@@ -11,7 +11,7 @@ import "dicthelper.js" as DictHelper
 Item {
     id: root
 
-    readonly property string currentProject: listView.currentIndex > -1 ? projectsModel[listView.currentIndex].id : ""
+    readonly property string currentProject: listView.currentIndex > -1 ? listView.currentItem.key : ""
     property var projectsModel: []
     property var projects: {
         return {}
@@ -32,21 +32,21 @@ Item {
 
     EventSource {
         id: eventSource
-        onEventReceived: {
-            var d = JSON.parse(data)
-            switch(type) {
-            case "put":
-                DictHelper.put(projects, d.path, d.data)
-                updateModel()
-                break
-            case "patch":
-                DictHelper.patch(projects, d.path, d.data)
-                updateModel()
-                break
-            default:
-                console.log("Event", type, "data", data)
-            }
-        }
+//        onEventReceived: {
+//            var d = JSON.parse(data)
+//            switch(type) {
+//            case "put":
+//                DictHelper.put(projects, d.path, d.data)
+//                updateModel()
+//                break
+//            case "patch":
+//                DictHelper.patch(projects, d.path, d.data)
+//                updateModel()
+//                break
+//            default:
+//                console.log("Event", type, "data", data)
+//            }
+//        }
     }
 
     Rectangle {
@@ -95,8 +95,10 @@ Item {
                 left: parent.left
             }
             ScrollBar.vertical: ScrollBar {}
-            model: projectsModel
+            model: eventSource
             delegate: Item {
+                readonly property var key: model.key
+                readonly property var contents: model.contents
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -115,12 +117,22 @@ Item {
                     Identicon {
                         width: height
                         height: parent.height
-                        project: modelData.id
+                        project: key
                     }
                     Text {
                         color: "#121212"
-                        text: modelData.id
-                        font.pixelSize: 14
+                        text: key
+//                        font.pixelSize: 14
+                    }
+                    Text {
+                        color: "#121212"
+                        text: contents.registered ? contents.registered : ".."
+//                        font.pixelSize: 14
+                    }
+                    Text {
+                        color: "#121212"
+                        text: contents.start_date ? contents.start_date : ".."
+//                        font.pixelSize: 14
                     }
                 }
                 MouseArea {
