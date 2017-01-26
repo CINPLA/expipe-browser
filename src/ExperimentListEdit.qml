@@ -122,7 +122,7 @@ Item {
                                     MouseArea {
                                         anchors.fill: parent
                                         onClicked: {
-                                            var name = "actions/" + experimentData.project + "/" + experimentData.id + "/" + root.property
+                                            var name = experimentData.__path + "/" + root.property
                                             var oldName = name + "/" + modelData.key
                                             Firebase.remove(oldName, function(req) {
                                                 console.log("Remove result", req.responseText)
@@ -146,7 +146,7 @@ Item {
                                 return
                             }
 
-                            var name = "actions/" + experimentData.project + "/" + experimentData.id + "/" + root.property
+                            var name = experimentData.__path + "/" + root.property
                             var newData = {}
                             newData[newInput.text] = true
                             Firebase.patch(name, newData, function(req2) {
