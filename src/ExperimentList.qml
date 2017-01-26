@@ -27,7 +27,6 @@ Rectangle {
     onCurrentProjectChanged: {
         experiments = {}
 //        searchModel.clear()
-        // TODO reimlpement search
     }
     
     color: "#efefef"
@@ -36,10 +35,58 @@ Rectangle {
         width: 1
     }
 
+//    Binding {
+//        target: root
+//        property: "currentData"
+//        when: listView.currentItem && bindingEnabled
+//        value: {
+//            trigger
+//            return eventSource.get(listView.currentItem.index)
+//        }
+//    }
+
+//    function refreshSearchModel() {
+//        bindingEnabled = false
+//        var previousId
+//        if(currentData) {
+//            previousId = currentData.id
+//        }
+//        searchModel.clear()
+//        for(var i = 0; i < eventSource.count; i++) {
+//            var experiment = eventSource.get(i)
+//            var found = true
+//            var needle = searchField.text
+//            if(needle !== "") {
+//                var haystack = JSON.stringify(experiment)
+//                if(haystack.indexOf(needle) > -1) {
+//                    found = true
+//                } else {
+//                    found = false
+//                }
+//            }
+//            if(found) {
+//                searchModel.append({index: i, key: experiment.id})
+//            }
+//        }
+//        for(var i = 0; i < searchModel.count; i++) {
+//            if(searchModel.get(i).key === previousId) {
+//                currentIndex = i
+//            }
+//        }
+//        bindingEnabled = true
+//    }
+
+//    ListModel {
+//        id: searchModel
+//    }
+
     EventSource {
         id: eventSource
         path: "actions/" + currentProject
         includeHelpers: true
+        onPutReceived: {
+//            refreshSearchModel()
+        }
     }
     
     Rectangle {
@@ -74,7 +121,7 @@ Rectangle {
             placeholderText: "Search"
 
             onTextChanged: {
-                refreshSearchModel()
+//                refreshSearchModel()
             }
         }
     }
@@ -105,10 +152,6 @@ Rectangle {
                     right: parent.right
                 }
                 height: 64
-
-                Component.onCompleted: {
-
-                }
 
                 Item {
                     id: imageItem
@@ -215,12 +258,12 @@ Rectangle {
             Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
                 var experiment = JSON.parse(req.responseText)
                 // TODO select new experiment in list
-//                for(var i = 0; i < listView.count; i++) {
-//                    if(listView.model.get(i).id === experiment.name) {
-//                        currentIndex = i
-//                        return
-//                    }
-//                }
+                //                for(var i = 0; i < listView.count; i++) {
+                //                    if(listView.model.get(i).id === experiment.name) {
+                //                        currentIndex = i
+                //                        return
+                //                    }
+                //                }
                 requestedId = experiment.name
             })
         }

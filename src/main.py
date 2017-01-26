@@ -20,29 +20,7 @@ from PyQt5.QtQml import qmlRegisterType, qmlRegisterSingletonType, QQmlComponent
 from expipe import settings
 import expipe.io
 
-#streams = []
-
 import time
-
-#class StreamHandler(QObject):
-#    def __init__(self, eventSource, path):
-#        super().__init__(eventSource)
-#        self.open = True
-#        print("Setting up stream")
-#        self.stream = expipe.io.core.db.child(path).stream(self.handle_message)
-#        print("Stream ready")
-#        self.eventSource = eventSource
-#        streams.append(self.stream)
-
-#    def close(self):
-#        streams.remove(self.stream)
-#        try:
-#            print("Closing stream...")
-#            self.stream.close()
-#            print("Stream closed")
-#        except AttributeError:
-#            print("Warning: Trouble closing stream. This is normal.")
-#        self.open = False
 
 
 class EventSource(QAbstractListModel):
