@@ -257,6 +257,7 @@ Rectangle {
                 }
                 onClicked: {
                     listView.currentIndex = index
+                    forceActiveFocus()
                 }
             }
         }

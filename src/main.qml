@@ -33,6 +33,16 @@ ApplicationWindow {
         property alias height: root.height
     }
 
+    Item {
+        anchors.fill: parent
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                parent.forceActiveFocus()
+            }
+        }
+    }
+
     LeftMenu {
         id: leftMenu
         anchors {
