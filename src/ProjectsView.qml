@@ -26,27 +26,9 @@ Item {
         projectsModel = newModel
     }
 
-    function retryConnection() {
-        eventSource.url = Firebase.server_url + "projects.json?auth=" + Firebase.auth
-    }
-
     EventSource {
         id: eventSource
-//        onEventReceived: {
-//            var d = JSON.parse(data)
-//            switch(type) {
-//            case "put":
-//                DictHelper.put(projects, d.path, d.data)
-//                updateModel()
-//                break
-//            case "patch":
-//                DictHelper.patch(projects, d.path, d.data)
-//                updateModel()
-//                break
-//            default:
-//                console.log("Event", type, "data", data)
-//            }
-//        }
+        path: "projects"
     }
 
     Rectangle {
