@@ -18,55 +18,59 @@ Rectangle {
         return {}
     }
 
-    function refreshAllModules() {
-        modulesModel.clear()
-        for(var id in modules) {
-            if(!modules[id]) {
-                continue
-            }
-            modulesModel.append({
-                                    id: id,
-                                    data: modules[id]
-                                })
-        }
-        modulesLoadingText.visible = false
+    onExperimentDataChanged: {
+        console.log("EXPERIMENT", experimentData)
     }
 
-    function refreshModules(path) {
-        console.log("PATH IS", path)
-        if(path === "/") {
-            refreshAllModules()
-            return
-        }
-        var pathSplit = path.split("/")
-        for(var i = 0; i < modulesModel.count; i++) {
-            var module = modulesModel.get(i)
-            var id = pathSplit[1]
-            if(module.id === id) {
-                if(!modules[id]) {
-                    modulesModel.remove(i)
-                    return
-                }
-                modulesModel.set(i, {id: id, data: modules[id]})
-                var dictEditor = moduleRepeater.itemAt(i)
-                pathSplit.shift() // remove ""
-                pathSplit.shift() // remove first element
-                dictEditor.refreshPath(pathSplit)
-                return
-            }
-        }
-        refreshAllModules()
-    }
+//    function refreshAllModules() {
+//        modulesModel.clear()
+//        for(var id in modules) {
+//            if(!modules[id]) {
+//                continue
+//            }
+//            modulesModel.append({
+//                                    id: id,
+//                                    data: modules[id]
+//                                })
+//        }
+//        modulesLoadingText.visible = false
+//    }
 
-    function putReceived(path, data) {
-        DictHelper.put(modules, path, data)
-        refreshModules(path)
-    }
+//    function refreshModules(path) {
+//        console.log("PATH IS", path)
+//        if(path === "/") {
+//            refreshAllModules()
+//            return
+//        }
+//        var pathSplit = path.split("/")
+//        for(var i = 0; i < modulesModel.count; i++) {
+//            var module = modulesModel.get(i)
+//            var id = pathSplit[1]
+//            if(module.id === id) {
+//                if(!modules[id]) {
+//                    modulesModel.remove(i)
+//                    return
+//                }
+//                modulesModel.set(i, {id: id, data: modules[id]})
+//                var dictEditor = moduleRepeater.itemAt(i)
+//                pathSplit.shift() // remove ""
+//                pathSplit.shift() // remove first element
+//                dictEditor.refreshPath(pathSplit)
+//                return
+//            }
+//        }
+//        refreshAllModules()
+//    }
 
-    function patchReceived(path, data) {
-        DictHelper.patch(modules, path, data)
-        refreshModules(path)
-    }
+//    function putReceived(path, data) {
+//        DictHelper.put(modules, path, data)
+//        refreshModules(path)
+//    }
+
+//    function patchReceived(path, data) {
+//        DictHelper.patch(modules, path, data)
+//        refreshModules(path)
+//    }
 
     color: "#fdfdfd"
     border {
@@ -75,20 +79,21 @@ Rectangle {
     }
 
     EventSource {
-        url: experimentData ? Firebase.server_url + "modules/" + experimentData.project + "/" + experimentData.id + ".json?auth=" + Firebase.auth : ""
-        onUrlChanged: {
-            modulesModel.clear()
-            modulesLoadingText.visible = true
-        }
+        id: eventSource
+        path: experimentData ? "modules/" + experimentData.project + "/" + experimentData.id : ""
+//        onUrlChanged: {
+//            modulesModel.clear()
+//            modulesLoadingText.visible = true
+//        }
 
-        onEventReceived: {
-            var d = JSON.parse(data)
-            if(type == "put") {
-                putReceived(d.path, d.data)
-            } else if(type == "patch") {
-                patchReceived(d.path, d.data)
-            }
-        }
+//        onEventReceived: {
+//            var d = JSON.parse(data)
+//            if(type == "put") {
+//                putReceived(d.path, d.data)
+//            } else if(type == "patch") {
+//                patchReceived(d.path, d.data)
+//            }
+//        }
     }
 
     Clipboard {
@@ -349,9 +354,7 @@ Rectangle {
 
             Repeater {
                 id: moduleRepeater
-                model: ListModel {
-                    id: modulesModel
-                }
+                model: eventSource
                 DictionaryEditor {
                     x: 100
                     keyString: model.id

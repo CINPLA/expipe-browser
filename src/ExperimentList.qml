@@ -19,19 +19,19 @@ Rectangle {
     }
     property string requestedId
     property string currentProject
-    property var currentData
+    property var currentData: listView.currentItem.modelData
     property bool trigger: false
     property bool bindingEnabled: true
 
-    Binding {
-        target: root
-        property: "currentData"
-        when: listView.currentItem && bindingEnabled
-        value: {
-            trigger
-            return experiments[listView.currentItem.key]
-        }
-    }
+//    Binding {
+//        target: root
+//        property: "currentData"
+//        when: listView.currentItem && bindingEnabled
+//        value: {
+//            trigger
+//            return experiments[listView.currentItem.key]
+//        }
+//    }
 
     onCurrentProjectChanged: {
         experiments = {}
@@ -46,99 +46,79 @@ Rectangle {
         width: 1
     }
 
-    function refresh() {
-        listModel.clear()
-        for(var id in experiments) {
-            var experiment = experiments[id]
-            if(!experiment) {
-                continue
-            }
-            experiment.id = id
-            experiment.project = currentProject
-            listModel.append(experiment)
-        }
-        refreshSearchModel()
-    }
+//    function refresh() {
+//        listModel.clear()
+//        for(var id in experiments) {
+//            var experiment = experiments[id]
+//            if(!experiment) {
+//                continue
+//            }
+//            experiment.id = id
+//            experiment.project = currentProject
+//            listModel.append(experiment)
+//        }
+//        refreshSearchModel()
+//    }
 
-    function refreshOne(id) {
-        for(var i = 0; i < listModel.count; i++) {
-            var item = listModel.get(i)
-            if(item.id === id) {
-                if(experiments[id]) {
-                    console.log("Refreshing", i, id)
-                    listModel.set(i, experiments[id])
-                } else {
-                    listModel.remove(i)
-                }
-                trigger = !trigger
-                return
-            }
-        }
-        refresh()
-    }
+//    function refreshOne(id) {
+//        for(var i = 0; i < listModel.count; i++) {
+//            var item = listModel.get(i)
+//            if(item.id === id) {
+//                if(experiments[id]) {
+//                    console.log("Refreshing", i, id)
+//                    listModel.set(i, experiments[id])
+//                } else {
+//                    listModel.remove(i)
+//                }
+//                trigger = !trigger
+//                return
+//            }
+//        }
+//        refresh()
+//    }
 
-    function refreshSearchModel() {
-        bindingEnabled = false
-        var previousId
-        if(currentData) {
-            previousId = currentData.id
-        }
-        searchModel.clear()
-        for(var i = 0; i < listModel.count; i++) {
-            var experiment = listModel.get(i)
-            var found = true
-            var needle = searchField.text
-            if(needle !== "") {
-                var haystack = JSON.stringify(experiment)
-                if(haystack.indexOf(needle) > -1) {
-                    found = true
-                } else {
-                    found = false
-                }
-            }
-            if(found) {
-                searchModel.append({key: experiment.id})
-            }
-        }
-        for(var i = 0; i < searchModel.count; i++) {
-            if(searchModel.get(i).key === previousId) {
-                currentIndex = i
-            }
-        }
-        bindingEnabled = true
-    }
+//    function refreshSearchModel() {
+//        bindingEnabled = false
+//        var previousId
+//        if(currentData) {
+//            previousId = currentData.id
+//        }
+//        searchModel.clear()
+//        for(var i = 0; i < listModel.count; i++) {
+//            var experiment = listModel.get(i)
+//            var found = true
+//            var needle = searchField.text
+//            if(needle !== "") {
+//                var haystack = JSON.stringify(experiment)
+//                if(haystack.indexOf(needle) > -1) {
+//                    found = true
+//                } else {
+//                    found = false
+//                }
+//            }
+//            if(found) {
+//                searchModel.append({key: experiment.id})
+//            }
+//        }
+//        for(var i = 0; i < searchModel.count; i++) {
+//            if(searchModel.get(i).key === previousId) {
+//                currentIndex = i
+//            }
+//        }
+//        bindingEnabled = true
+//    }
 
-    ListModel {
-        id: listModel
-    }
+//    ListModel {
+//        id: listModel
+//    }
 
-    ListModel {
-        id: searchModel
-    }
+//    ListModel {
+//        id: searchModel
+//    }
 
     EventSource {
         id: eventSource
-        url: Firebase.server_url + "actions/" + currentProject + "/.json?auth=" + Firebase.auth
-        onEventReceived: {
-            var d = JSON.parse(data)
-            switch(type) {
-            case "put":
-                DictHelper.put(experiments, d.path, d.data)
-                if(d.path === "/") {
-                    refresh()
-                } else {
-                    refreshOne(d.path.split("/")[1])
-                }
-                break
-            case "patch":
-                DictHelper.patch(experiments, d.path, d.data)
-                if(d.path === "/") {
-                    refresh()
-                } else {
-                    refreshOne(d.path.split("/")[1])
-                }
-            }
-        }
+        path: "actions/" + currentProject
     }
     
     Rectangle {
@@ -189,7 +169,7 @@ Rectangle {
             id: listView
             anchors.fill: parent
             clip: true
-            model: searchModel
+            model: eventSource
 
             highlightMoveDuration: 0
             highlight: Rectangle {
@@ -197,8 +177,8 @@ Rectangle {
                 opacity: 0.1
             }
             delegate: ItemDelegate {
-                property string key: model.key
-                property var modelData: experiments[key]
+                readonly property var key: model.key
+                readonly property var modelData: model.contents
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -221,7 +201,7 @@ Rectangle {
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
-                        action: modelData
+                        action: contents
                     }
                 }
 
@@ -236,7 +216,7 @@ Rectangle {
                     }
                     Text {
                         color: "#121212"
-                        text: modelData.id
+                        text: key
                         font.pixelSize: 12
                     }
                     Text {
