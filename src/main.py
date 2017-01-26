@@ -36,8 +36,6 @@ class EventSource(QAbstractListModel):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        print(self.contents_role)
-
         self._path = ""
         self.contents = {}
         self.stream_handler = None
