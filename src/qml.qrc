@@ -29,5 +29,6 @@
         <file>Identicon.qml</file>
         <file>qmldir</file>
         <file>Style.qml</file>
+        <file>Firebase.qml</file>
     </qresource>
 </RCC>

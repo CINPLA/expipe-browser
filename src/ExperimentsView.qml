@@ -5,8 +5,9 @@ import QtQuick.Layouts 1.1
 
 import ExpipeBrowser 1.0
 
+import "."
+
 import "md5.js" as MD5
-import "firebase.js" as Firebase
 import "dicthelper.js" as DictHelper
 
 Item {
@@ -41,6 +42,6 @@ Item {
             top: parent.top
             bottom: parent.bottom
         }
-        sourceComponent: experimentList.currentIndex > -1 ? experimentComponent : undefined
+        sourceComponent: experimentList.currentData ? experimentComponent : undefined
     }
 }

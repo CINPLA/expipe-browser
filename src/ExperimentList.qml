@@ -6,8 +6,9 @@ import QtQuick.Layouts 1.1
 
 import ExpipeBrowser 1.0
 
+import "."
+
 import "md5.js" as MD5
-import "firebase.js" as Firebase
 import "dicthelper.js" as DictHelper
 
 Rectangle {
@@ -19,14 +20,14 @@ Rectangle {
     }
     property string requestedId
     property string currentProject
-    property var currentData: listView.currentItem.modelData
+    property var currentData: listView.currentItem ? listView.currentItem.modelData : undefined
     property bool trigger: false
     property bool bindingEnabled: true
 
     onCurrentProjectChanged: {
         experiments = {}
-        listModel.clear() // TODO, see if this is needed
-        searchModel.clear()
+//        searchModel.clear()
+        // TODO reimlpement search
     }
     
     color: "#efefef"
@@ -38,6 +39,7 @@ Rectangle {
     EventSource {
         id: eventSource
         path: "actions/" + currentProject
+        includeHelpers: true
     }
     
     Rectangle {
@@ -197,30 +199,30 @@ Rectangle {
         }
         standardButtons: Dialog.Cancel | Dialog.Ok
         onAccepted: {
-            console.log("Create new needs fixing")
-//            if(!currentProject) {
-//                console.log("ERROR: Current project not set.")
-//                return
-//            }
+            if(!currentProject) {
+                console.log("ERROR: Current project not set.")
+                return
+            }
 
-//            if(!newName.text) {
-//                console.log("ERROR: Name cannot be empty.")
-//                return
-//            }
-//            var registered = (new Date()).toISOString()
-//            var experiment = {
-//                registered: registered
-//            }
-//            Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
-//                var experiment = JSON.parse(req.responseText)
-//                for(var i = 0; i < listModel.count; i++) {
-//                    if(listModel.get(i).id === experiment.name) {
-//                        experimentList.currentIndex = i
+            if(!newName.text) {
+                console.log("ERROR: Name cannot be empty.")
+                return
+            }
+            var registered = (new Date()).toISOString()
+            var experiment = {
+                registered: registered
+            }
+            Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
+                var experiment = JSON.parse(req.responseText)
+                // TODO select new experiment in list
+//                for(var i = 0; i < listView.count; i++) {
+//                    if(listView.model.get(i).id === experiment.name) {
+//                        currentIndex = i
 //                        return
 //                    }
 //                }
-//                requestedId = experiment.name
-//            })
+                requestedId = experiment.name
+            })
         }
     }
 }

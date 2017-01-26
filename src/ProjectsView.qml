@@ -5,7 +5,8 @@ import QtQuick.Layouts 1.1
 
 import ExpipeBrowser 1.0
 
-import "firebase.js" as Firebase
+import "."
+
 import "dicthelper.js" as DictHelper
 
 Item {
@@ -29,6 +30,7 @@ Item {
     EventSource {
         id: eventSource
         path: "projects"
+        includeHelpers: true
     }
 
     Rectangle {

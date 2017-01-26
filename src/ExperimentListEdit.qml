@@ -3,10 +3,9 @@ import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
-//import ExpipeBrowser 1.0
+import "."
 
 import "md5.js" as MD5
-import "firebase.js" as Firebase
 
 Item {
     id: root
@@ -18,7 +17,6 @@ Item {
     property color inputColor: readyColor
     property var experimentItem
     property bool readOnly: false
-    property string autoCompletePath
     property var comboModel: []
     property var model: {
         var result = []
@@ -38,10 +36,6 @@ Item {
 
     height: row.height
     width: row.width
-
-    onAutoCompletePathChanged: {
-        resetComboModel()
-    }
 
     function reset() {
         root.readOnly = false

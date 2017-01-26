@@ -15,7 +15,7 @@ from PyQt5.QtCore import Qt, pyqtProperty, QObject, QUrl, pyqtSignal, pyqtSlot, 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager, QNetworkDiskCache
-from PyQt5.QtQml import qmlRegisterType, QQmlComponent, QQmlApplicationEngine, QQmlNetworkAccessManagerFactory
+from PyQt5.QtQml import qmlRegisterType, qmlRegisterSingletonType, QQmlComponent, QQmlApplicationEngine, QQmlNetworkAccessManagerFactory
 
 from expipe import settings
 import expipe.io
@@ -47,6 +47,10 @@ import time
 
 class EventSource(QAbstractListModel):
     path_changed = pyqtSignal("QString", name="pathChanged")
+    include_helpers_changed = pyqtSignal("bool", name="includeHelpersChanged")
+
+    put_received = pyqtSignal(["QVariant", "QVariant"], name="putReceived", arguments=["path", "data"])
+    patch_received = pyqtSignal(["QVariant", "QVariant"], name="patchReceived", arguments=["path", "data"])
 
     key_role = Qt.UserRole + 1
     contents_role = Qt.UserRole + 2
@@ -59,11 +63,14 @@ class EventSource(QAbstractListModel):
         self.stream_handler = None
         self._reply = None
         self._manager = QNetworkAccessManager(self)
+        self._include_helpers = False
 
     def __del__(self):
         print("Got deleted...")
 
     def refresh(self):
+        if not self.includeHelpers:
+            return
         for key in self.contents:
             try:
                 self.contents[key]["__key"] = key
@@ -131,18 +138,20 @@ class EventSource(QAbstractListModel):
             event_data = dataLine.strip()
             message = json.loads(event_data) # sets path and data
             if message:
-                path = message["path"]
+                path_str = message["path"]
                 data = message["data"]
-                path = path.split("/")
+                path = path_str.split("/")
                 if path[0] == "":
                     del(path[0])
                 if path[-1] == "":
                     del(path[-1])
                 if event_type == "put":
                     self.process_put(path, data)
+                    self.put_received.emit(path, data)
                 elif event_type == "patch":
                     for key in data:
                         self.process_put(path + [key], data[key])
+                    self.patch_received.emit(path, data)
         else:
             print("ERROR: Got corrupted event line")
             print("Contents:", contents)
@@ -175,6 +184,17 @@ class EventSource(QAbstractListModel):
             self.reconnect(url)
         self.path_changed.emit(path)
 
+    @pyqtProperty(bool)
+    def includeHelpers(self):
+        return self._include_helpers
+
+    @includeHelpers.setter
+    def includeHelpers(self, enabled):
+        if self._include_helpers == enabled:
+            return
+        self._include_helpers = enabled
+        self.include_helpers_changed.emit(enabled)
+
     def data(self, index=QModelIndex(), role=0):
         if role == self.key_role:
             key_list = list(self.contents.keys())
@@ -203,14 +223,6 @@ class EventSource(QAbstractListModel):
         else:
             dic[path[-1]] = value
 
-class Pyrebase(QObject):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def patch(self, name, data):
-        db.child(name).patch(data)
-
-
 class Clipboard(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -218,6 +230,20 @@ class Clipboard(QObject):
     @pyqtSlot(str)
     def setText(self, text):
         QApplication.clipboard().setText(text)
+
+
+class Pyrebase(QObject):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    @pyqtSlot(str, name="buildUrl", result=str)
+    def build_url(self, path):
+        return expipe.io.core.db.child(path).build_request_url(expipe.io.core.user["idToken"])
+
+pyrebase_static = Pyrebase()
+
+def pyrebase_instance(engine, scriptEngine):
+    return pyrebase_static
 
 class NetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory):
     def create(self, parent):
@@ -233,8 +259,9 @@ class NetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "EventSource")
-    qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "Pyrebase")
+    qmlRegisterSingletonType(Pyrebase, "ExpipeBrowser", 1, 0, "Pyrebase", pyrebase_instance)
     qmlRegisterType(Clipboard, "ExpipeBrowser", 1, 0, "Clipboard")
+
     QApplication.setOrganizationName("Cinpla")
     QApplication.setApplicationName("Expipe Browser")
     QtWebEngine.initialize()

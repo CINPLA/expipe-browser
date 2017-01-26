@@ -3,10 +3,9 @@ import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
-//import ExpipeBrowser 1.0
+import "."
 
 import "md5.js" as MD5
-import "firebase.js" as Firebase
 
 Column {
     id: root

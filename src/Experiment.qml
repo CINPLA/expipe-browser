@@ -5,8 +5,9 @@ import QtQuick.Layouts 1.1
 
 import ExpipeBrowser 1.0
 
+import "."
+
 import "md5.js" as MD5
-import "firebase.js" as Firebase
 import "dicthelper.js" as DictHelper
 
 Rectangle {
@@ -19,10 +20,6 @@ Rectangle {
         return {}
     }
 
-    onExperimentDataChanged: {
-        console.log("EXPERIMENT", experimentData)
-    }
-
     color: "#fdfdfd"
     border {
         color: "#dedede"
@@ -32,6 +29,25 @@ Rectangle {
     EventSource {
         id: eventSource
         path: experimentData ? "modules/" + currentProject + "/" + experimentData.__key : ""
+
+        function refreshModules(path) {
+            if(path.length < 1) {
+                return
+            }
+            for(var i = 0; i < moduleView.count; i++) {
+                var dictEditor = moduleView.itemAt(i)
+                if(dictEditor.key === path[0]) {
+                    dictEditor.refreshPath(path)
+                }
+            }
+        }
+
+        onPutReceived: {
+            refreshModules(path)
+        }
+        onPatchReceived: {
+            refreshModules(path)
+        }
     }
 
     Clipboard {
@@ -125,7 +141,6 @@ Rectangle {
             ExperimentListEdit {
                 experimentData: root.experimentData
                 property: "subjects"
-                autoCompletePath: "/subjects"
                 text: "Subjects"
             }
 
@@ -176,7 +191,7 @@ Rectangle {
 
             Label {
                 x: 100
-                visible: !modulesLoadingText.visible && modulesModel.count < 1
+                visible: !modulesLoadingText.visible && moduleView.count < 1
                 color: "#ababab"
                 text: "No modules"
             }
@@ -280,7 +295,7 @@ Rectangle {
                         console.log("ERROR: Missing name or value")
                         return
                     }
-                    var target = "modules/" + experimentData.project + "/" + experimentData.__key + "/" + name
+                    var target = "modules/" + currentProject + "/" + experimentData.__key + "/" + name
                     var targetProperty = root.property
                     var data = JSON.parse(value)
                     Firebase.put(target, data, function(req) {
@@ -291,13 +306,14 @@ Rectangle {
             }
 
             Repeater {
-                id: moduleRepeater
+                id: moduleView
                 model: eventSource
                 DictionaryEditor {
+                    property string key: model.key
                     x: 100
                     keyString: model.key
                     contents: model.contents
-                    basePath: "modules/" + experimentData.__key + "/" + model.key
+                    basePath: "modules/" + currentProject + "/" + experimentData.__key + "/" + model.key
                     onContentsChanged: {
                         console.log("Contents changed", JSON.stringify(contents))
                     }

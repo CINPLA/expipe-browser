@@ -4,13 +4,6 @@ import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 import Qt.labs.settings 1.0
 
-//import ExpipeBrowser 1.0
-//import QtWebView 1.1
-import QtWebEngine 1.0
-
-import "md5.js" as MD5
-import "firebase.js" as Firebase
-
 ApplicationWindow {
     id: root
 
@@ -81,31 +74,5 @@ ApplicationWindow {
     SettingsView {
         anchors.fill: viewArea
         visible: leftMenu.selectedState === "settings"
-    }
-
-    // TODO replace this entire WebView + Timer solution with a PyRebase wrapper
-
-    WebEngineView {
-        id: webView
-        anchors.fill: parent
-        url: "http://cinpla.org/expipe/auth/"
-        visible: !hasToken
-    }
-
-    Timer {
-        running: true
-        interval: 1000
-        repeat: true
-        onTriggered: {
-            webView.runJavaScript("globalToken", function(globalToken) {
-                //                console.log("Global token", globalToken)
-                if(globalToken) {
-                    Firebase.auth = globalToken
-                    hasToken = true
-                } else {
-                    hasToken = false
-                }
-            })
-        }
     }
 }
