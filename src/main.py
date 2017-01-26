@@ -9,6 +9,7 @@ import sys
 import re
 import os
 import json
+import urllib
 from collections import OrderedDict
 
 from PyQt5.QtCore import Qt, pyqtProperty, QObject, QUrl, pyqtSignal, pyqtSlot, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant
@@ -22,6 +23,18 @@ import expipe.io
 
 import time
 
+def deep_convert_dict(layer):
+    to_ret = layer
+    if isinstance(layer, OrderedDict):
+        to_ret = dict(layer)
+
+    try:
+        for key, value in to_ret.items():
+            to_ret[key] = deep_convert_dict(value)
+    except AttributeError:
+        pass
+
+    return to_ret
 
 class EventSource(QAbstractListModel):
     path_changed = pyqtSignal("QString", name="pathChanged")
@@ -54,6 +67,7 @@ class EventSource(QAbstractListModel):
                 self.contents[key]["__key"] = key
                 self.contents[key]["__path"] = self._path + "/" + key
             except TypeError:
+                print("Could not set __key", key)
                 pass
 
     def process_put(self, path, data):
@@ -114,7 +128,7 @@ class EventSource(QAbstractListModel):
             event_type = eventLine.strip()
             dataLine = re.sub(r"^data:\s*", "", dataLine)
             event_data = dataLine.strip()
-            message = json.loads(event_data) # sets path and data
+            message = json.loads(event_data, object_pairs_hook=OrderedDict) # sets path and data
             if message:
                 path_str = message["path"]
                 data = message["data"]
@@ -183,7 +197,9 @@ class EventSource(QAbstractListModel):
         elif role == self.contents_role:
             value_list = list(self.contents.values())
             try:
-                return value_list[index.row()]
+                value = value_list[index.row()]
+                value_dict = deep_convert_dict(value)
+                return value_dict
             except IndexError:
                 return QVariant()
         else:

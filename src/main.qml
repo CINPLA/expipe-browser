@@ -71,6 +71,12 @@ ApplicationWindow {
         currentProject: projectsView.currentProject
     }
 
+    TemplatesView {
+        id: templatesView
+        anchors.fill: viewArea
+        visible: leftMenu.selectedState === "templates"
+    }
+
     SettingsView {
         anchors.fill: viewArea
         visible: leftMenu.selectedState === "settings"

@@ -195,11 +195,11 @@ Rectangle {
                             if(modelData.datetime) {
                                 try {
                                     var date = new Date(modelData.datetime)
+                                    var dateString = date.toISOString().substring(0, 10)
+                                    results.push(dateString)
                                 } catch (e) {
-                                    var date = new Date()
                                 }
 
-                                results.push(date.toISOString().substring(0, 10))
                             }
                             return results.join(", ")
                         }

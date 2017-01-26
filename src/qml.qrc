@@ -30,5 +30,6 @@
         <file>qmldir</file>
         <file>Style.qml</file>
         <file>Firebase.qml</file>
+        <file>TemplatesView.qml</file>
     </qresource>
 </RCC>
