@@ -23,21 +23,10 @@ Rectangle {
     property bool trigger: false
     property bool bindingEnabled: true
 
-//    Binding {
-//        target: root
-//        property: "currentData"
-//        when: listView.currentItem && bindingEnabled
-//        value: {
-//            trigger
-//            return experiments[listView.currentItem.key]
-//        }
-//    }
-
     onCurrentProjectChanged: {
         experiments = {}
         listModel.clear() // TODO, see if this is needed
         searchModel.clear()
-//        refresh()
     }
     
     color: "#efefef"
@@ -45,76 +34,6 @@ Rectangle {
         color: "#dedede"
         width: 1
     }
-
-//    function refresh() {
-//        listModel.clear()
-//        for(var id in experiments) {
-//            var experiment = experiments[id]
-//            if(!experiment) {
-//                continue
-//            }
-//            experiment.id = id
-//            experiment.project = currentProject
-//            listModel.append(experiment)
-//        }
-//        refreshSearchModel()
-//    }
-
-//    function refreshOne(id) {
-//        for(var i = 0; i < listModel.count; i++) {
-//            var item = listModel.get(i)
-//            if(item.id === id) {
-//                if(experiments[id]) {
-//                    console.log("Refreshing", i, id)
-//                    listModel.set(i, experiments[id])
-//                } else {
-//                    listModel.remove(i)
-//                }
-//                trigger = !trigger
-//                return
-//            }
-//        }
-//        refresh()
-//    }
-
-//    function refreshSearchModel() {
-//        bindingEnabled = false
-//        var previousId
-//        if(currentData) {
-//            previousId = currentData.id
-//        }
-//        searchModel.clear()
-//        for(var i = 0; i < listModel.count; i++) {
-//            var experiment = listModel.get(i)
-//            var found = true
-//            var needle = searchField.text
-//            if(needle !== "") {
-//                var haystack = JSON.stringify(experiment)
-//                if(haystack.indexOf(needle) > -1) {
-//                    found = true
-//                } else {
-//                    found = false
-//                }
-//            }
-//            if(found) {
-//                searchModel.append({key: experiment.id})
-//            }
-//        }
-//        for(var i = 0; i < searchModel.count; i++) {
-//            if(searchModel.get(i).key === previousId) {
-//                currentIndex = i
-//            }
-//        }
-//        bindingEnabled = true
-//    }
-
-//    ListModel {
-//        id: listModel
-//    }
-
-//    ListModel {
-//        id: searchModel
-//    }
 
     EventSource {
         id: eventSource
@@ -278,29 +197,30 @@ Rectangle {
         }
         standardButtons: Dialog.Cancel | Dialog.Ok
         onAccepted: {
-            if(!currentProject) {
-                console.log("ERROR: Current project not set.")
-                return
-            }
+            console.log("Create new needs fixing")
+//            if(!currentProject) {
+//                console.log("ERROR: Current project not set.")
+//                return
+//            }
 
-            if(!newName.text) {
-                console.log("ERROR: Name cannot be empty.")
-                return
-            }
-            var registered = (new Date()).toISOString()
-            var experiment = {
-                registered: registered
-            }
-            Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
-                var experiment = JSON.parse(req.responseText)
-                for(var i = 0; i < listModel.count; i++) {
-                    if(listModel.get(i).id === experiment.name) {
-                        experimentList.currentIndex = i
-                        return
-                    }
-                }
-                requestedId = experiment.name
-            })
+//            if(!newName.text) {
+//                console.log("ERROR: Name cannot be empty.")
+//                return
+//            }
+//            var registered = (new Date()).toISOString()
+//            var experiment = {
+//                registered: registered
+//            }
+//            Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
+//                var experiment = JSON.parse(req.responseText)
+//                for(var i = 0; i < listModel.count; i++) {
+//                    if(listModel.get(i).id === experiment.name) {
+//                        experimentList.currentIndex = i
+//                        return
+//                    }
+//                }
+//                requestedId = experiment.name
+//            })
         }
     }
 }

@@ -37,7 +37,7 @@ Item {
             }
             return
         }
-        var name = "actions/" + experimentData.project + "/" + experimentData.id
+        var name = experimentData.__path
         var targetProperty = root.property
         var data = {}
         data[root.property] = textInput.text
@@ -53,6 +53,9 @@ Item {
         textInput.readOnly = true
         textInput.color = root.waitingColor
     }
+//    Pyrebase {
+//        id: pyrebase
+//    }
 
     onBackendTextChanged: {
         backgroundAnimation.restart()

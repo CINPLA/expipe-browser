@@ -92,8 +92,8 @@ Item {
         source: {
             if(project !== "") {
                 return common(project, width, "set2", "bg1")
-            } else if(action && action.id) {
-                return common(action.id, width)
+            } else if(action && action["__key"]) {
+                return common(action["__key"], width)
             } else {
                 return common("undefined", width)
             }

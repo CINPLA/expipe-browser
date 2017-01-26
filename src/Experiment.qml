@@ -13,6 +13,7 @@ Rectangle {
     id: root
 
     property var experimentData
+    property string currentProject
 
     property var modules: {
         return {}
@@ -22,56 +23,6 @@ Rectangle {
         console.log("EXPERIMENT", experimentData)
     }
 
-//    function refreshAllModules() {
-//        modulesModel.clear()
-//        for(var id in modules) {
-//            if(!modules[id]) {
-//                continue
-//            }
-//            modulesModel.append({
-//                                    id: id,
-//                                    data: modules[id]
-//                                })
-//        }
-//        modulesLoadingText.visible = false
-//    }
-
-//    function refreshModules(path) {
-//        console.log("PATH IS", path)
-//        if(path === "/") {
-//            refreshAllModules()
-//            return
-//        }
-//        var pathSplit = path.split("/")
-//        for(var i = 0; i < modulesModel.count; i++) {
-//            var module = modulesModel.get(i)
-//            var id = pathSplit[1]
-//            if(module.id === id) {
-//                if(!modules[id]) {
-//                    modulesModel.remove(i)
-//                    return
-//                }
-//                modulesModel.set(i, {id: id, data: modules[id]})
-//                var dictEditor = moduleRepeater.itemAt(i)
-//                pathSplit.shift() // remove ""
-//                pathSplit.shift() // remove first element
-//                dictEditor.refreshPath(pathSplit)
-//                return
-//            }
-//        }
-//        refreshAllModules()
-//    }
-
-//    function putReceived(path, data) {
-//        DictHelper.put(modules, path, data)
-//        refreshModules(path)
-//    }
-
-//    function patchReceived(path, data) {
-//        DictHelper.patch(modules, path, data)
-//        refreshModules(path)
-//    }
-
     color: "#fdfdfd"
     border {
         color: "#dedede"
@@ -80,20 +31,7 @@ Rectangle {
 
     EventSource {
         id: eventSource
-        path: experimentData ? "modules/" + experimentData.project + "/" + experimentData.id : ""
-//        onUrlChanged: {
-//            modulesModel.clear()
-//            modulesLoadingText.visible = true
-//        }
-
-//        onEventReceived: {
-//            var d = JSON.parse(data)
-//            if(type == "put") {
-//                putReceived(d.path, d.data)
-//            } else if(type == "patch") {
-//                patchReceived(d.path, d.data)
-//            }
-//        }
+        path: experimentData ? "modules/" + currentProject + "/" + experimentData.__key : ""
     }
 
     Clipboard {
@@ -108,7 +46,7 @@ Rectangle {
         Button {
             id: codeButton
             property string snippet: "from expipe.io import find_action\n" +
-                                     "action = expipe.io.get_action(project='" + experimentData.project + "', action='" + experimentData.id + "')\n" +
+                                     "action = expipe.io.get_action(project='" + experimentData.project + "', action='" + experimentData.__key + "')\n" +
                                      "# continue working with action"
             anchors {
                 right: parent.right
@@ -151,7 +89,7 @@ Rectangle {
                     }
                     font.pixelSize: 24
                     font.weight: Font.Light
-                    text: experimentData.id
+                    text: experimentData["__key"]
                 }
             }
 
@@ -342,7 +280,7 @@ Rectangle {
                         console.log("ERROR: Missing name or value")
                         return
                     }
-                    var target = "modules/" + experimentData.project + "/" + experimentData.id + "/" + name
+                    var target = "modules/" + experimentData.project + "/" + experimentData.__key + "/" + name
                     var targetProperty = root.property
                     var data = JSON.parse(value)
                     Firebase.put(target, data, function(req) {
@@ -357,9 +295,9 @@ Rectangle {
                 model: eventSource
                 DictionaryEditor {
                     x: 100
-                    keyString: model.id
-                    contents: model.data
-                    basePath: "modules/" + experimentData.id + "/" + model.id
+                    keyString: model.key
+                    contents: model.contents
+                    basePath: "modules/" + experimentData.__key + "/" + model.key
                     onContentsChanged: {
                         console.log("Contents changed", JSON.stringify(contents))
                     }

@@ -28,6 +28,7 @@ Item {
     Component {
         id: experimentComponent
         Experiment {
+            currentProject: root.currentProject
             experimentData: experimentList.currentData
         }
     }

@@ -79,7 +79,7 @@ Item {
                                 }
                                 return
                             }
-                            var name = "actions/" + experimentData.project + "/" + experimentData.id + "/" + root.property
+                            var name = experimentData.__path + "/" + root.property
                             var targetProperty = root.property
                             var oldName = name + "/" + modelData.key
                             var newData = {}

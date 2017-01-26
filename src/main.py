@@ -65,7 +65,11 @@ class EventSource(QAbstractListModel):
 
     def refresh(self):
         for key in self.contents:
-            self.contents[key]["id"] = key
+            try:
+                self.contents[key]["__key"] = key
+                self.contents[key]["__path"] = self._path + "/" + key
+            except TypeError:
+                pass
 
     def process_put(self, path, data):
         if len(path) == 0:
@@ -95,10 +99,13 @@ class EventSource(QAbstractListModel):
                 self.endInsertRows()
         self.refresh()
 
-    def reconnect(self, url):
+    def disconnect(self):
         if self._reply is not None:
             self._reply.abort()
             self._reply = None
+
+    def reconnect(self, url):
+        self.disconnect()
         request = QNetworkRequest(url)
         request.setRawHeader(b"Accept", b"text/event-stream")
         self._reply = self._manager.get(request)
@@ -134,7 +141,8 @@ class EventSource(QAbstractListModel):
                 if event_type == "put":
                     self.process_put(path, data)
                 elif event_type == "patch":
-                    raise NotImplementedError("Patch not implemented")
+                    for key in data:
+                        self.process_put(path + [key], data[key])
         else:
             print("ERROR: Got corrupted event line")
             print("Contents:", contents)
@@ -158,10 +166,13 @@ class EventSource(QAbstractListModel):
             return
         self._path = path
         self.process_put([], {})
-        target = expipe.io.core.db.child(path).order_by_key()
-        url_str = target.build_request_url(token=expipe.io.core.user["idToken"])
-        url = QUrl(url_str)
-        self.reconnect(url)
+        if path == "":
+            self.disconnect()
+        else:
+            target = expipe.io.core.db.child(path).order_by_key()
+            url_str = target.build_request_url(token=expipe.io.core.user["idToken"])
+            url = QUrl(url_str)
+            self.reconnect(url)
         self.path_changed.emit(path)
 
     def data(self, index=QModelIndex(), role=0):
@@ -192,6 +203,13 @@ class EventSource(QAbstractListModel):
         else:
             dic[path[-1]] = value
 
+class Pyrebase(QObject):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def patch(self, name, data):
+        db.child(name).patch(data)
+
 
 class Clipboard(QObject):
     def __init__(self, parent=None):
@@ -215,6 +233,7 @@ class NetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "EventSource")
+    qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "Pyrebase")
     qmlRegisterType(Clipboard, "ExpipeBrowser", 1, 0, "Clipboard")
     QApplication.setOrganizationName("Cinpla")
     QApplication.setApplicationName("Expipe Browser")
