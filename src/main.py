@@ -12,7 +12,7 @@ import json
 import urllib
 from collections import OrderedDict
 
-from PyQt5.QtCore import Qt, pyqtProperty, QObject, QUrl, pyqtSignal, pyqtSlot, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant
+from PyQt5.QtCore import Q_ENUMS, pyqtProperty, pyqtSignal, pyqtSlot, Qt, QObject, QUrl, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant
 from PyQt5.QtWidgets import QApplication
 #from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager, QNetworkDiskCache
@@ -40,10 +40,13 @@ class EventSource(QAbstractListModel):
     key_role = Qt.UserRole + 1
     contents_role = Qt.UserRole + 2
 
-    Disconnected = 0
-    Connected = 1
-    Connecting = 2
-    Error = 3
+    class Status:
+        Disconnected = 0
+        Connected = 1
+        Connecting = 2
+        Error = 3
+
+    Q_ENUMS(Status)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -54,7 +57,7 @@ class EventSource(QAbstractListModel):
         self._reply = None
         self._manager = QNetworkAccessManager(self)
         self._include_helpers = False
-        self._status = self.Disconnected
+        self._status = self.Status.Disconnected
 
     def __del__(self):
         print("Got deleted...")
@@ -110,7 +113,7 @@ class EventSource(QAbstractListModel):
         self._reply = self._manager.get(request)
         self._reply.readyRead.connect(self.processReadyRead)
         self._reply.finished.connect(self.processFinished)
-        self.status = self.Connecting
+        self.status = self.Status.Connecting
 
     def processReadyRead(self):
         reply = self.sender()
@@ -121,7 +124,7 @@ class EventSource(QAbstractListModel):
         if len(lines) < 2:
             print("ERROR: Too few lines in event!")
             print("Contents:", contents)
-            self.status = self.Error
+            self.status = self.Status.Error
             return
         eventLine = lines[0]
         dataLine = lines[1]
@@ -146,7 +149,7 @@ class EventSource(QAbstractListModel):
                     for key in data:
                         self.process_put(path + [key], data[key])
                     self.patch_received.emit(path, data)
-            self.status = self.Connected
+            self.status = self.Status.Connected
         else:
             print("ERROR: Got corrupted event line")
             print("Contents:", contents)
@@ -155,7 +158,7 @@ class EventSource(QAbstractListModel):
     def processFinished(self):
         reply = self.sender()
         if not reply:
-            self.status = self.Disconnected
+            self.status = self.Status.Disconnected
             return
         url = reply.attribute(QNetworkRequest.RedirectionTargetAttribute)
         if url:
@@ -165,9 +168,8 @@ class EventSource(QAbstractListModel):
         return self._status
 
     def setStatus(self, status):
-        print("Status", status)
         self._status = status
-#        self.statusChanged.emit()
+        self.statusChanged.emit()
 
     def path(self):
         return self._path
@@ -239,7 +241,7 @@ class EventSource(QAbstractListModel):
 
     path = pyqtProperty(str, path, setPath, notify=pathChanged)
     includeHelpers = pyqtProperty(bool, includeHelpers, setIncludeHelpers, notify=includeHelpersChanged)
-    status = pyqtProperty(bool, status, setStatus, notify=statusChanged)
+    status = pyqtProperty(int, status, setStatus, notify=statusChanged)
 
     put_received = pyqtSignal(["QVariant", "QVariant"], name="putReceived", arguments=["path", "data"])
     patch_received = pyqtSignal(["QVariant", "QVariant"], name="patchReceived", arguments=["path", "data"])

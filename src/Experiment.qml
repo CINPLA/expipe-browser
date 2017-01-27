@@ -183,10 +183,18 @@ Rectangle {
 
             Label {
                 id: modulesLoadingText
-                visible: false
                 x: 100
+                visible: eventSource.status != EventSource.Connected
                 color: "#ababab"
-                text: "Loading ..."
+                text: {
+                    switch(eventSource.status) {
+                    case EventSource.Connecting:
+                        return "Loading..."
+                    case EventSource.Disconnected:
+                        return "Error loading modules!"
+                    }
+                    return ""
+                }
             }
 
             Label {
