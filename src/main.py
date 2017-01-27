@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 from PyQt5.QtCore import Qt, pyqtProperty, QObject, QUrl, pyqtSignal, pyqtSlot, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWebEngine import QtWebEngine
+#from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager, QNetworkDiskCache
 from PyQt5.QtQml import qmlRegisterType, qmlRegisterSingletonType, QQmlComponent, QQmlApplicationEngine, QQmlNetworkAccessManagerFactory
 
@@ -264,7 +264,7 @@ if __name__ == "__main__":
 
     QApplication.setOrganizationName("Cinpla")
     QApplication.setApplicationName("Expipe Browser")
-    QtWebEngine.initialize()
+#    QtWebEngine.initialize()
     engine = QQmlApplicationEngine()
     engine.setNetworkAccessManagerFactory(NetworkAccessManagerFactory())
     engine.load(QUrl("main.qml"))
