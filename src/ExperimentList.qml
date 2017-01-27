@@ -38,7 +38,7 @@ Rectangle {
     Binding {
         target: root
         property: "currentData"
-        when: listView.currentItem && bindingEnabled
+        when: bindingEnabled
         value: {
             trigger
             return listView.currentItem ? listView.currentItem.modelData : undefined
