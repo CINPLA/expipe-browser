@@ -235,11 +235,11 @@ class EventSource(QAbstractListModel):
     pathChanged = pyqtSignal()
     includeHelpersChanged = pyqtSignal()
     # TODO figure out why adding this signal causes a crash in PyQt
-#    statusChanged = pyqtSignal()
+    statusChanged = pyqtSignal()
 
     path = pyqtProperty(str, path, setPath, notify=pathChanged)
     includeHelpers = pyqtProperty(bool, includeHelpers, setIncludeHelpers, notify=includeHelpersChanged)
-#    status = pyqtProperty(bool, status, setStatus, notify=statusChanged)
+    status = pyqtProperty(bool, status, setStatus, notify=statusChanged)
 
     put_received = pyqtSignal(["QVariant", "QVariant"], name="putReceived", arguments=["path", "data"])
     patch_received = pyqtSignal(["QVariant", "QVariant"], name="patchReceived", arguments=["path", "data"])

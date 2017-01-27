@@ -26,21 +26,21 @@ Rectangle {
         width: 1
     }
 
+    function refreshModules(path) {
+        if(path.length < 1) {
+            return
+        }
+        for(var i = 0; i < moduleView.count; i++) {
+            var dictEditor = moduleView.itemAt(i)
+            if(dictEditor.key === path[0]) {
+                dictEditor.refreshPath(path)
+            }
+        }
+    }
+
     EventSource {
         id: eventSource
         path: experimentData ? "modules/" + currentProject + "/" + experimentData.__key : ""
-
-        function refreshModules(path) {
-            if(path.length < 1) {
-                return
-            }
-            for(var i = 0; i < moduleView.count; i++) {
-                var dictEditor = moduleView.itemAt(i)
-                if(dictEditor.key === path[0]) {
-                    dictEditor.refreshPath(path)
-                }
-            }
-        }
 
         onPutReceived: {
             refreshModules(path)
