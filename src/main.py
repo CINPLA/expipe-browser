@@ -37,14 +37,13 @@ def deep_convert_dict(layer):
     return to_ret
 
 class EventSource(QAbstractListModel):
-    path_changed = pyqtSignal("QString", name="pathChanged")
-    include_helpers_changed = pyqtSignal("bool", name="includeHelpersChanged")
-
-    put_received = pyqtSignal(["QVariant", "QVariant"], name="putReceived", arguments=["path", "data"])
-    patch_received = pyqtSignal(["QVariant", "QVariant"], name="patchReceived", arguments=["path", "data"])
-
     key_role = Qt.UserRole + 1
     contents_role = Qt.UserRole + 2
+
+    Disconnected = 0
+    Connected = 1
+    Connecting = 2
+    Error = 3
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -55,6 +54,7 @@ class EventSource(QAbstractListModel):
         self._reply = None
         self._manager = QNetworkAccessManager(self)
         self._include_helpers = False
+        self._status = self.Disconnected
 
     def __del__(self):
         print("Got deleted...")
@@ -110,6 +110,7 @@ class EventSource(QAbstractListModel):
         self._reply = self._manager.get(request)
         self._reply.readyRead.connect(self.processReadyRead)
         self._reply.finished.connect(self.processFinished)
+        self.status = self.Connecting
 
     def processReadyRead(self):
         reply = self.sender()
@@ -120,6 +121,7 @@ class EventSource(QAbstractListModel):
         if len(lines) < 2:
             print("ERROR: Too few lines in event!")
             print("Contents:", contents)
+            self.status = self.Error
             return
         eventLine = lines[0]
         dataLine = lines[1]
@@ -144,6 +146,7 @@ class EventSource(QAbstractListModel):
                     for key in data:
                         self.process_put(path + [key], data[key])
                     self.patch_received.emit(path, data)
+            self.status = self.Connected
         else:
             print("ERROR: Got corrupted event line")
             print("Contents:", contents)
@@ -152,17 +155,24 @@ class EventSource(QAbstractListModel):
     def processFinished(self):
         reply = self.sender()
         if not reply:
+            self.status = self.Disconnected
             return
         url = reply.attribute(QNetworkRequest.RedirectionTargetAttribute)
         if url:
             self.reconnect(url)
 
-    @pyqtProperty('QString')
+    def status(self):
+        return self._status
+
+    def setStatus(self, status):
+        print("Status", status)
+        self._status = status
+#        self.statusChanged.emit()
+
     def path(self):
         return self._path
 
-    @path.setter
-    def path(self, path):
+    def setPath(self, path):
         if path == self._path:
             return
         self._path = path
@@ -174,18 +184,16 @@ class EventSource(QAbstractListModel):
             url_str = target.build_request_url(token=expipe.io.core.user["idToken"])
             url = QUrl(url_str)
             self.reconnect(url)
-        self.path_changed.emit(path)
+        self.pathChanged.emit()
 
-    @pyqtProperty(bool)
     def includeHelpers(self):
         return self._include_helpers
 
-    @includeHelpers.setter
-    def includeHelpers(self, enabled):
+    def setIncludeHelpers(self, enabled):
         if self._include_helpers == enabled:
             return
         self._include_helpers = enabled
-        self.include_helpers_changed.emit(enabled)
+        self.includeHelpersChanged.emit()
 
     def data(self, index=QModelIndex(), role=0):
         if role == self.key_role:
@@ -193,7 +201,7 @@ class EventSource(QAbstractListModel):
             try:
                 return key_list[index.row()]
             except IndexError:
-                return ""
+                return None
         elif role == self.contents_role:
             value_list = list(self.contents.values())
             try:
@@ -201,9 +209,9 @@ class EventSource(QAbstractListModel):
                 value_dict = deep_convert_dict(value)
                 return value_dict
             except IndexError:
-                return QVariant()
+                return None
         else:
-            return QVariant()
+            return None
 
     def rowCount(self, index=QModelIndex()):
         return len(self.contents)
@@ -222,6 +230,19 @@ class EventSource(QAbstractListModel):
             del(dic[path[-1]])
         else:
             dic[path[-1]] = value
+
+
+    pathChanged = pyqtSignal()
+    includeHelpersChanged = pyqtSignal()
+    # TODO figure out why adding this signal causes a crash in PyQt
+#    statusChanged = pyqtSignal()
+
+    path = pyqtProperty(str, path, setPath, notify=pathChanged)
+    includeHelpers = pyqtProperty(bool, includeHelpers, setIncludeHelpers, notify=includeHelpersChanged)
+#    status = pyqtProperty(bool, status, setStatus, notify=statusChanged)
+
+    put_received = pyqtSignal(["QVariant", "QVariant"], name="putReceived", arguments=["path", "data"])
+    patch_received = pyqtSignal(["QVariant", "QVariant"], name="patchReceived", arguments=["path", "data"])
 
 class Clipboard(QObject):
     def __init__(self, parent=None):
