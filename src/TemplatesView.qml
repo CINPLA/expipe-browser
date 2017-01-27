@@ -1,4 +1,5 @@
 import QtQuick 2.4
+import QtQuick.Controls 1.4 as QQC1
 import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
@@ -94,6 +95,10 @@ Item {
                         color: "#121212"
                         text: contents.name ? contents.name : ".."
                     }
+                    Text {
+                        color: "#121212"
+                        text: contents.identifier ? contents.identifier : ".."
+                    }
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -130,54 +135,121 @@ Item {
         }
     }
 
-    Rectangle {
-        id: templateView
+    Loader {
         anchors {
             left: templateList.right
             right: parent.right
             top: parent.top
             bottom: parent.bottom
         }
-        color: "#fdfdfd"
-        Label {
-            id: title
-            anchors {
-                left: parent.left
-                top: parent.top
-                margins: 96
-            }
-            font.pixelSize: 24
-            font.weight: Font.Light
-            text: currentTemplate.name
-        }
+        sourceComponent: currentTemplate ? component : undefined
+    }
 
-        Column {
-            anchors {
-                top: title.bottom
-                left: parent.left
-                right: parent.right
-                margins: 48
-            }
+    Component {
+        id: component
+        Rectangle {
+            id: templateView
+            color: "#fdfdfd"
             Label {
-                text: "Name:"
+                id: title
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    margins: 96
+                }
+                font.pixelSize: 24
+                font.weight: Font.Light
+                text: currentTemplate.name
             }
-            TextField {
-                id: nameField
-                onEditingFinished: {
-                    if(nameField.text === currentTemplate.name) {
-                        return
-                    }
-                    Firebase.put(currentTemplate.__path + "/name", nameField.text, function(req) {
-                        console.log("Updated name", req.statusText, req.responseText)
-                    })
+
+            GridLayout {
+                anchors {
+                    top: title.bottom
+                    left: parent.left
+                    right: parent.right
+                    margins: 48
+                }
+                columns: 2
+                rowSpacing: 8
+                columnSpacing: 8
+
+                // -- invisible spacers --
+
+                Item {
+                    implicitHeight: 1
+                    Layout.minimumWidth: 200
                 }
 
-                Binding {
-                    target: nameField
-                    property: "text"
-                    value: currentTemplate.name
-                    when: currentTemplate !== undefined
+                Item {
+                    implicitHeight: 1
+                    Layout.fillWidth: true
                 }
+
+                // --------- row ---------
+
+                Label {
+                    id: nameLabel
+                    Layout.alignment: Qt.AlignRight
+                    text: "Name:"
+                }
+
+                BoundTextEdit {
+                    contents: currentTemplate
+                    property: "name"
+                }
+
+                // --------- row ---------
+
+                Label {
+                    id: identifierLabel
+                    Layout.alignment: Qt.AlignRight
+                    text: "Identifier:"
+                }
+
+                BoundTextEdit {
+                    contents: currentTemplate
+                    property: "identifier"
+                }
+
+
+                // --------- row ---------
+
+                Label {
+                    text: "Contents:"
+                    Layout.alignment: Qt.AlignRight
+                }
+
+                DictionaryEditor {
+                    id: dictionaryEditor
+
+                    function refreshContents(path) {
+                        console.log("PATCH ON", path)
+                        var firstElement = path.shift()
+                        var secondElement = path.shift()
+                        console.log(firstElement, secondElement)
+                        if(firstElement === currentTemplate.__key && secondElement === "contents") {
+                            refreshPath(path) // first element is now removed
+                        }
+                    }
+
+                    Connections {
+                        target: eventSource
+                        onPutReceived: {
+                            dictionaryEditor.refreshContents(path)
+                        }
+                        onPatchReceived: {
+                            dictionaryEditor.refreshContents(path)
+                        }
+                    }
+
+                    keyString: currentTemplate.identifier
+                    contents: typeof(currentTemplate.contents) == "object" ? currentTemplate.contents : {}
+                    basePath: currentTemplate.__path + "/contents"
+                    onContentsChanged: {
+                        console.log("Contents changed")
+                    }
+                }
+
             }
         }
     }

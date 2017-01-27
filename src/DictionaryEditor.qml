@@ -285,20 +285,18 @@ Item {
 
                         MouseArea {
                             id: mouseArea
-                            anchors.fill: parent
-                            propagateComposedEvents: true
+                            anchors.fill: textField
                             hoverEnabled: true
                             cursorShape: Qt.IBeamCursor
-                            onClicked: {
-                                textField.forceActiveFocus()
-                                mouse.accepted = false
-                            }
+                            acceptedButtons: Qt.NoButton
                         }
 
                         TextInput {
                             id: textField
 
                             anchors.centerIn: parent
+
+                            width: Math.max(64, contentWidth)
 
                             color: "#121212"
                             text: backendText

@@ -138,6 +138,7 @@ class EventSource(QAbstractListModel):
                 path_str = message["path"]
                 data = message["data"]
                 path = path_str.split("/")
+                print(event_type, path_str, data)
                 if path[0] == "":
                     del(path[0])
                 if path[-1] == "":
@@ -231,7 +232,15 @@ class EventSource(QAbstractListModel):
         if value is None:
             del(dic[path[-1]])
         else:
+            if not isinstance(dic, dict):
+                # need to have a dict to set value
+                # this is false if the element was something else,
+                # such as a string
+                dic = self.set_nested(path[:-1], {})
             dic[path[-1]] = value
+            # return value should only be used in the above case
+            # where not isinstance(dic, dict)
+            return dic[path[-1]]
 
 
     pathChanged = pyqtSignal()
