@@ -1,0 +1,38 @@
+package:
+  name: expipe-browser
+  version: 0.1
+  
+source:
+  path: .
+ 
+build:
+    script: python setup.py install
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - pip
+    - numpy
+    - quantities
+    - pyyaml
+
+  run:
+    - python
+    - setuptools
+    - pip
+    - numpy
+    - scipy
+    - quantities
+    - pyyaml
+    - exdir
+    - expipe
+
+test:
+  imports:
+    - expipebrowser
+
+about:
+  home: https://github.com/CINPLA/expipe-browser/
+  license: GPLv3
+  license_file: LICENSE
