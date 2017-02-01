@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager, QNetworkDiskCache
 from PyQt5.QtQml import qmlRegisterType, qmlRegisterSingletonType, QQmlComponent, QQmlApplicationEngine, QQmlNetworkAccessManagerFactory
 
+import expipebrowser.qml_qrc
 from expipe import settings
 import expipe.io
 
@@ -303,7 +304,7 @@ if __name__ == "__main__":
 #    QtWebEngine.initialize()
     engine = QQmlApplicationEngine()
     engine.setNetworkAccessManagerFactory(NetworkAccessManagerFactory())
-    engine.load(QUrl("main.qml"))
+    engine.load(QUrl("qrc:/main.qml"))
 
     app.exec_()
             

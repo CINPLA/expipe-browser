@@ -11,7 +11,7 @@ entry_points = None
 install_requires = []
 
 setup(
-    name="Expipe Browser",
+    name="expipe-browser",
     packages=find_packages(),
     entry_points=entry_points,
     include_package_data=True,

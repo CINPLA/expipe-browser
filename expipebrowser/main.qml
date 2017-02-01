@@ -10,7 +10,7 @@ ApplicationWindow {
     visible: true
     width: 1440
     height: 1024
-    title: qsTr("CINPLA Browser")
+    title: qsTr("Expipe Browser")
 
     property bool hasToken: false
     property var xhr
