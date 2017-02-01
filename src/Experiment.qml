@@ -233,18 +233,19 @@ Rectangle {
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: "Template:"
                     }
+                    
+                    EventSource {
+                        id: templateEventSource
+                        path: "templates"
+                    }
 
                     ComboBox {
                         id: templateSelector
-                        property var currentItem: currentIndex > -1 ? model.get(currentIndex) : {key: "", value: "", name: ""}
+                        property var currentItem: currentIndex > -1 ? model.data(model.index(currentIndex, 0), 258) : {key: "", value: "", name: ""}
                         textRole: "key"
-                        model: ListModel {
-                            ListElement { key: "None"; value: '{"value": false}' }
-                            ListElement { key: "Tracking"; name: "tracking"; value: '{"box_size": false, "wireless": false, "camera": false, "ttl_channel": false}' }
-                            ListElement { key: "Grating"; name: "grating";value: '{"directions": false, "duration": false, "distance": false}' }
-                        }
+                        model: templateEventSource
                         onActivated: {
-                            nameField.text = model.get(index).name
+                            nameField.text = model.data(model.index(currentIndex, 0), 258).identifier
                         }
                     }
 
@@ -292,20 +293,19 @@ Rectangle {
                         }
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         color: "#545454"
-                        text: templateSelector.currentItem.value
+                        text: JSON.stringify(templateSelector.currentItem.contents)
                     }
                 }
                 onAccepted: {
-                    var selection = templateSelector.model.get(templateSelector.currentIndex)
-                    var value = selection.value
+                    var selection = templateSelector.currentItem
                     var name = nameField.text
-                    if(!value || !name) {
+                    var data = selection.contents
+                    if(!data || !name) {
                         console.log("ERROR: Missing name or value")
                         return
                     }
                     var target = "modules/" + currentProject + "/" + experimentData.__key + "/" + name
                     var targetProperty = root.property
-                    var data = JSON.parse(value)
                     Firebase.put(target, data, function(req) {
                         console.log("Add module result:", req.status, req.responseText)
                         templateSelector.currentIndex = 0
