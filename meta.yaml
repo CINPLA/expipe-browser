@@ -4,9 +4,6 @@ package:
   
 source:
   path: .
- 
-build:
-    script: python setup.py install
 
 requirements:
   build:
