@@ -138,7 +138,13 @@ class EventSource(QAbstractListModel):
             event_type = eventLine.strip()
             dataLine = re.sub(r"^data:\s*", "", dataLine)
             event_data = dataLine.strip()
-            message = json.loads(event_data, object_pairs_hook=OrderedDict) # sets path and data
+            try:
+                message = json.loads(event_data, object_pairs_hook=OrderedDict) # sets path and data
+            except json.decoder.JSONDecodeError as e:
+                print("ERROR: Could not parse JSON:")
+                print(event_data)
+                print(e)
+                return
             if message:
                 path_str = message["path"]
                 data = message["data"]
