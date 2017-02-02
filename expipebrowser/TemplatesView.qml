@@ -13,12 +13,14 @@ import "dicthelper.js" as DictHelper
 Item {
     id: root
 
+    property var currentKey: listView.currentItem ? listView.currentItem.key : undefined
     property var currentTemplate: listView.currentItem ? listView.currentItem.contents : undefined
 
     EventSource {
-        id: eventSource
+        id: templatesModel
         path: "templates"
         includeHelpers: true
+        shallow: true
     }
 
     Rectangle {
@@ -67,7 +69,7 @@ Item {
                 left: parent.left
             }
             ScrollBar.vertical: ScrollBar {}
-            model: eventSource
+            model: templatesModel
             delegate: Item {
                 readonly property var key: model.key
                 readonly property var contents: model.contents
@@ -90,10 +92,6 @@ Item {
                         width: height
                         height: parent.height
                         project: key
-                    }
-                    Text {
-                        color: "#121212"
-                        text: contents.name ? contents.name : ".."
                     }
                     Text {
                         color: "#121212"
@@ -150,6 +148,14 @@ Item {
         Rectangle {
             id: templateView
             color: "#fdfdfd"
+            
+            EventSource {
+                id: eventSource
+                path: "templates_contents/" + currentKey
+                onPathChanged: console.log("Path is now", path)
+                includeHelpers: false
+            }
+            
             Label {
                 id: title
                 anchors {
@@ -159,7 +165,7 @@ Item {
                 }
                 font.pixelSize: 24
                 font.weight: Font.Light
-                text: currentTemplate.name
+                text: currentTemplate.__key
             }
 
             GridLayout {
@@ -221,35 +227,23 @@ Item {
 
                 DictionaryEditor {
                     id: dictionaryEditor
-
-                    function refreshContents(path) {
-                        console.log("PATCH ON", path)
-                        var firstElement = path.shift()
-                        var secondElement = path.shift()
-                        console.log(firstElement, secondElement)
-                        if(firstElement === currentTemplate.__key && secondElement === "contents") {
-                            refreshPath(path) // first element is now removed
-                        }
-                    }
-
+                    
+                    visible: eventSource.status == EventSource.Connected
+                    
                     Connections {
                         target: eventSource
                         onPutReceived: {
-                            dictionaryEditor.refreshContents(path)
+                            dictionaryEditor.refreshPath(path)
                         }
                         onPatchReceived: {
-                            dictionaryEditor.refreshContents(path)
+                            dictionaryEditor.refreshPath(path)
                         }
                     }
 
                     keyString: currentTemplate.identifier
-                    contents: typeof(currentTemplate.contents) == "object" ? currentTemplate.contents : {}
-                    basePath: currentTemplate.__path + "/contents"
-                    onContentsChanged: {
-                        console.log("Contents changed")
-                    }
+                    contents: eventSource.contents
+                    basePath: eventSource.path
                 }
-
             }
         }
     }
