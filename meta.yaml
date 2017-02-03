@@ -12,6 +12,7 @@ requirements:
     - numpy
     - quantities
     - pyyaml
+    - pyqt
 
   run:
     - python
