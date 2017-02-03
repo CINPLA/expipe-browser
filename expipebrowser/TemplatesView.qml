@@ -194,19 +194,6 @@ Item {
                 // --------- row ---------
 
                 Label {
-                    id: nameLabel
-                    Layout.alignment: Qt.AlignRight
-                    text: "Name:"
-                }
-
-                BoundTextEdit {
-                    contents: currentTemplate
-                    property: "name"
-                }
-
-                // --------- row ---------
-
-                Label {
                     id: identifierLabel
                     Layout.alignment: Qt.AlignRight
                     text: "Identifier:"

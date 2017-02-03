@@ -1,5 +1,5 @@
 package:
-  name: expipe-browser
+  version: {{ environ.get("GIT_DESCRIBE", "unknown_version")|replace("v", "")|replace("-", "_") }}
   version: 0.1
   
 source:
