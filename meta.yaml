@@ -1,4 +1,5 @@
 package:
+  name: expipe-browser
   version: {{ environ.get("GIT_DESCRIBE", "unknown_version")|replace("v", "")|replace("-", "_") }}
   
 source:
@@ -12,7 +13,7 @@ requirements:
     - numpy
     - quantities
     - pyyaml
-    - pyqt
+    - pyqt >=5
 
   run:
     - python
