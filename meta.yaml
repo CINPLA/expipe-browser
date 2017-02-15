@@ -3,7 +3,7 @@ package:
   version: {{ environ.get("GIT_DESCRIBE", "unknown_version")|replace("v", "")|replace("-", "_") }}
 
 build:
-  noarch_python: True
+  noarch: python
   
 source:
   path: .
