@@ -61,8 +61,9 @@ Rectangle {
 
         Button {
             id: codeButton
-            property string snippet: "from expipe.io import find_action\n" +
-                                     "action = expipe.io.get_action(project='" + experimentData.project + "', action='" + experimentData.__key + "')\n" +
+            property string snippet: "import expipe.io\n" +
+                                     "project = expipe.io.get_project(" + experimentData.project+ ")\n" +
+                                     "action = project.require_action(" + experimentData.__key + ")\n" +
                                      "# continue working with action"
             anchors {
                 right: parent.right
