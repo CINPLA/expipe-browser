@@ -6,14 +6,14 @@ from setuptools import setup, find_packages
 
 long_description = open("README.md").read()
 
-entry_points = None
-
 install_requires = []
 
 setup(
     name="expipe-browser",
     packages=find_packages(),
-    entry_points=entry_points,
     include_package_data=True,
-    scripts=["bin/expipe-browser"]
+    entry_points='''
+        [console_scripts]
+        expipe-browser=expipebrowser.main:main
+    '''
 )

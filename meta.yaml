@@ -1,9 +1,11 @@
 package:
   name: expipe-browser
-  version: {{ environ.get("GIT_DESCRIBE", "unknown_version")|replace("v", "")|replace("-", "_") }}
+  version: {{ environ.get("GIT_DESCRIBE", "0.0.0_custom")|replace("v", "")|replace("-", "_") }}
 
 build:
   noarch: python
+  entry_points:
+    - expipe-browser = expipebrowser.main:main
   
 source:
   path: .
@@ -16,7 +18,7 @@ requirements:
     - numpy
     - quantities
     - pyyaml
-    - pyqt >=5
+    # - pyqt >=5 # TODO add this back when PyQt is delivered by conda-forge
 
   run:
     - python
