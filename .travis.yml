@@ -6,6 +6,7 @@ python:
 install:
   - source libs/travis-conda-scripts/scripts/config.sh
   - bash -ex libs/travis-conda-scripts/scripts/travis_install.sh
+  - conda install pyqt=5 # hack for pyrcc5 to work
 script:
   - source libs/travis-conda-scripts/scripts/config.sh
   - bash -ex libs/travis-conda-scripts/scripts/build.sh
