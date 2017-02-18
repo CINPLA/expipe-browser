@@ -1,6 +1,6 @@
 import QtQuick 2.4
 import QtQuick.Controls 1.4 as QQC1
-import QtQuick.Controls 2.0
+import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
@@ -145,7 +145,7 @@ Rectangle {
                 color: "black"
                 opacity: 0.1
             }
-            delegate: ItemDelegate {
+            delegate: Rectangle {
                 readonly property var index: model.index
                 readonly property var key: model.key
                 readonly property var modelData: eventSource.data(eventSource.index(index, 0), 258)
@@ -206,9 +206,12 @@ Rectangle {
                         font.pixelSize: 11
                     }
                 }
-                onClicked: {
-                    listView.currentIndex = index
-                    forceActiveFocus()
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        listView.currentIndex = index
+                        forceActiveFocus()
+                    }
                 }
             }
         }
@@ -220,7 +223,7 @@ Rectangle {
             bottom: parent.bottom
             margins: 32
         }
-        highlighted: true
+        // highlighted: true
         text: "Create new"
         onClicked: {
             newDialog.open()

@@ -1,5 +1,5 @@
 import QtQuick 2.4
-import QtQuick.Controls 2.0
+import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
@@ -57,7 +57,7 @@ Rectangle {
     Flickable {
         anchors.fill: parent
         contentHeight: container.height + 360
-        ScrollBar.vertical: ScrollBar {}
+        // ScrollBar.vertical: ScrollBar {}
 
         Button {
             id: codeButton
@@ -264,7 +264,7 @@ Rectangle {
                             left: parent.left
                             right: parent.right
                         }
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        // wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         id: nameField
                     }
 
@@ -332,25 +332,25 @@ Rectangle {
     }
 
 
-    Popup {
-        id: codePopup
-        modal: true
-        focus: true
-        dim: true
-        x: root.width / 2 - width / 2
-        y: root.height / 2 - height / 2
-        width: 320
-        height: 180
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-        Label {
-            anchors {
-                fill: parent
-                margins: 32
-            }
-
-            text: "Code copied to clipboard\n\n" +
-                  "Paste it in a Jupyter Notebook to load the experiment."
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-        }
-    }
+    // Popup {
+    //     id: codePopup
+    //     modal: true
+    //     focus: true
+    //     dim: true
+    //     x: root.width / 2 - width / 2
+    //     y: root.height / 2 - height / 2
+    //     width: 320
+    //     height: 180
+    //     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    //     Label {
+    //         anchors {
+    //             fill: parent
+    //             margins: 32
+    //         }
+    // 
+    //         text: "Code copied to clipboard\n\n" +
+    //               "Paste it in a Jupyter Notebook to load the experiment."
+    //         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+    //     }
+    // }
 }

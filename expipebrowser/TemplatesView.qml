@@ -1,6 +1,6 @@
 import QtQuick 2.4
 import QtQuick.Controls 1.4 as QQC1
-import QtQuick.Controls 2.0
+import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
@@ -68,7 +68,7 @@ Item {
                 right: parent.right
                 left: parent.left
             }
-            ScrollBar.vertical: ScrollBar {}
+            // ScrollBar.vertical: ScrollBar {}
             model: templatesModel
             delegate: Item {
                 readonly property var key: model.key
@@ -119,7 +119,7 @@ Item {
                 bottom: parent.bottom
                 margins: 32
             }
-            highlighted: true
+            // highlighted: true
             text: "Create new"
             onClicked: {
                 var template = {
