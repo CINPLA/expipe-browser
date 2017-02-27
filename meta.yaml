@@ -5,6 +5,7 @@ package:
 build:
   # noarch: python  # TODO Add back noarch when it works properly on Windows,
                     # we are converting packages manually now
+  script: python setup.py install
   entry_points:
     - expipe-browser = expipebrowser.main:main
   
