@@ -4,7 +4,7 @@ import ExpipeBrowser 1.0
 
 QtObject {
     function get(name, callback) {
-        var url = server_url + name + ".json?auth=" + auth
+        var url = Pyrebase.buildUrl(name)
         var req = new XMLHttpRequest()
         req.open("GET", url)
         req.onreadystatechange = function() {
