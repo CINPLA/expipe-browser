@@ -267,13 +267,6 @@ Rectangle {
             }
             Firebase.put("actions/" + currentProject + "/" + newName.text, experiment, function(req) {
                 var experiment = JSON.parse(req.responseText)
-                // TODO select new experiment in list
-                //                for(var i = 0; i < listView.count; i++) {
-                //                    if(listView.model.get(i).id === experiment.name) {
-                //                        currentIndex = i
-                //                        return
-                //                    }
-                //                }
                 requestedId = experiment.name
             })
         }

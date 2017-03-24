@@ -1,4 +1,5 @@
 import QtQuick 2.4
+import QtQuick.Controls 1.4 as QQC1
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
@@ -239,14 +240,45 @@ Rectangle {
                         id: templateEventSource
                         path: "templates"
                     }
-
-                    ComboBox {
-                        id: templateSelector
-                        property var currentItem: currentIndex > -1 ? model.data(model.index(currentIndex, 0), 258) : {key: "", value: "", name: ""}
-                        textRole: "key"
-                        model: templateEventSource
-                        onActivated: {
-                            nameField.text = model.data(model.index(currentIndex, 0), 258).identifier
+                    
+                    // TODO resize based on dialog size using Layouts
+                    QQC1.ScrollView {
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                        }
+                        height: 160
+                        ListView {
+                            id: templateSelector
+                            anchors.fill: parent
+                            model: templateEventSource
+                            highlightMoveDuration: 0
+                            highlight: Rectangle {
+                                color: "black"
+                                opacity: 0.1
+                            }
+                            delegate: Item {
+                                readonly property var modelData: model
+                                anchors {
+                                    left: parent.left
+                                    right: parent.right
+                                }
+                                height: 32
+                                Text {
+                                    anchors {
+                                        fill: parent
+                                        margins: 8
+                                    }
+                                    fontSizeMode: Text.Fit
+                                    text: key
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        templateSelector.currentIndex = index
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -260,12 +292,13 @@ Rectangle {
                     }
 
                     TextField {
+                        id: nameField
                         anchors {
                             left: parent.left
                             right: parent.right
                         }
+                        text: templateSelector.currentItem.modelData.key
                         // wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        id: nameField
                     }
 
                     Label {
@@ -277,39 +310,23 @@ Rectangle {
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: "(Permanent: Cannot be changed)"
                     }
-
-                    Label {
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                        }
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: "Contents:"
-                    }
-
-                    Label {
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                        }
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        color: "#545454"
-                        text: JSON.stringify(templateSelector.currentItem.contents)
-                    }
                 }
                 onAccepted: {
-                    var selection = templateSelector.currentItem
+                    var selection = templateSelector.currentItem.modelData
                     var name = nameField.text
-                    var data = selection.contents
-                    if(!data || !name) {
-                        console.log("ERROR: Missing name or value")
-                        return
-                    }
-                    var target = "modules/" + currentProject + "/" + experimentData.__key + "/" + name
-                    var targetProperty = root.property
-                    Firebase.put(target, data, function(req) {
-                        console.log("Add module result:", req.status, req.responseText)
-                        templateSelector.currentIndex = 0
+                    Firebase.get("templates_contents/" + selection.key + "/", function(req) {
+                        console.log("RESPONSE", req.responseText)
+                        var data = JSON.parse(req.responseText)
+                        if(!data || !name) {
+                            console.log("ERROR: Missing name or value")
+                            return
+                        }
+                        var target = "modules/" + currentProject + "/" + experimentData.__key + "/" + name
+                        var targetProperty = root.property
+                        Firebase.put(target, data, function(req) {
+                            console.log("Add module result:", req.status, req.responseText)
+                            templateSelector.currentIndex = 0
+                        })
                     })
                 }
             }

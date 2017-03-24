@@ -95,7 +95,7 @@ Item {
                     }
                     Text {
                         color: "#121212"
-                        text: contents.identifier ? contents.identifier : ".."
+                        text: key ? key : "[unnamed]"
                     }
                 }
                 MouseArea {
@@ -122,13 +122,7 @@ Item {
             // highlighted: true
             text: "Create new"
             onClicked: {
-                var template = {
-                    registered: Date.now()
-                }
-
-                Firebase.post("templates", template, function(req) {
-                    console.log("template created", req.responseText, req.statusText)
-                })
+                newDialog.open()
             }
         }
     }
@@ -165,7 +159,7 @@ Item {
                 }
                 font.pixelSize: 24
                 font.weight: Font.Light
-                text: currentTemplate.__key
+                text: currentKey
             }
 
             GridLayout {
@@ -196,7 +190,7 @@ Item {
                 Label {
                     id: identifierLabel
                     Layout.alignment: Qt.AlignRight
-                    text: "Identifier:"
+                    text: "Default module name:"
                 }
 
                 BoundTextEdit {
@@ -232,6 +226,41 @@ Item {
                     basePath: eventSource.path
                 }
             }
+        }
+    }
+    
+    Dialog {
+        id: newDialog
+        title: "Create new template"
+        Column {
+            spacing: 8
+            Label {
+                text: "Provide an unique ID for your template."
+            }
+            TextField {
+                id: newName
+                selectByMouse: true
+            }
+            Label {
+                text: "Examples: 'eddy_analysis', 'microscope_manufacturer'"
+            }
+        }
+        standardButtons: Dialog.Cancel | Dialog.Ok
+        onAccepted: {
+            if(!newName.text) {
+                console.log("ERROR: Name cannot be empty.")
+                return
+            }
+            var name = newName.text
+            var registered = (new Date()).toISOString()
+            var experiment = {
+                registered: registered,
+                identifier: name
+            }
+            Firebase.put("templates/" + name, experiment, function(req) {
+                var createdTemplate = JSON.parse(req.responseText)
+                // requestedId = createdTemplate // TODO select new template
+            })
         }
     }
 }
