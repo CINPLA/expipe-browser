@@ -41,7 +41,7 @@ Rectangle {
 
     EventSource {
         id: eventSource
-        path: experimentData ? "modules/" + currentProject + "/" + experimentData.__key : ""
+        path: experimentData ? "action_modules/" + currentProject + "/" + experimentData.__key : ""
 
         onPutReceived: {
             refreshModules(path)
@@ -321,7 +321,7 @@ Rectangle {
                             console.log("ERROR: Missing name or value")
                             return
                         }
-                        var target = "modules/" + currentProject + "/" + experimentData.__key + "/" + name
+                        var target = "action_modules/" + currentProject + "/" + experimentData.__key + "/" + name
                         var targetProperty = root.property
                         Firebase.put(target, data, function(req) {
                             console.log("Add module result:", req.status, req.responseText)
@@ -339,7 +339,7 @@ Rectangle {
                     x: 100
                     keyString: model.key
                     contents: model.contents
-                    basePath: "modules/" + currentProject + "/" + experimentData.__key + "/" + model.key
+                    basePath: "action_modules/" + currentProject + "/" + experimentData.__key + "/" + model.key
                     onContentsChanged: {
                         console.log("Contents changed", JSON.stringify(contents))
                     }
