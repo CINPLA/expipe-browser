@@ -18,6 +18,18 @@ Item {
         return {}
     }
 
+    function refreshModules(path) {
+        if(path.length < 1) {
+            return
+        }
+        for(var i = 0; i < moduleView.count; i++) {
+            var dictEditor = moduleView.itemAt(i)
+            if(dictEditor.key === path[0]) {
+                dictEditor.refreshPath(path)
+            }
+        }
+    }
+
     function updateModel() {
         // TODO update surgically
         var newModel = []
@@ -189,20 +201,109 @@ Item {
             bottom: parent.bottom
         }
         color: "#fdfdfd"
-        Label {
+        
+        EventSource {
+            id: moduleEventSource
+            path: currentProject ? "project_modules/" + currentProject : ""
+
+            onPutReceived: {
+                refreshModules(path)
+            }
+            onPatchReceived: {
+                refreshModules(path)
+            }
+        }
+        
+        Column {
             anchors {
                 left: parent.left
-                top: parent.top
-                margins: 96
+                right: parent.right
             }
-            font.pixelSize: 24
-            font.weight: Font.Light
-            text: currentProject
-        }
+            
+            Label {
+                anchors {
+                    left: parent.left
+                    margins: 96
+                }
+                font.pixelSize: 24
+                font.weight: Font.Light
+                text: currentProject
+            }
 
-        Label {
-            anchors.centerIn: parent
-            text: "Projects cannot be edited yet"
+            RowLayout {
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: 100
+                    rightMargin: 48
+                }
+
+                Label {
+                    id: modulesTitle
+                    font.pixelSize: 24
+                    font.weight: Font.Light
+                    color: "#434343"
+                    horizontalAlignment: Text.AlignRight
+                    text: "Modules"
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
+
+                Button {
+                    id: addModuleButton
+                    text: "Add module"
+                    onClicked: {
+                        newModuleDialog.open()
+                    }
+                }
+
+            }
+
+            Label {
+                id: modulesLoadingText
+                x: 100
+                visible: moduleEventSource.status != EventSource.Connected
+                color: "#ababab"
+                text: {
+                    switch(moduleEventSource.status) {
+                    case EventSource.Connecting:
+                        return "Loading..."
+                    case EventSource.Disconnected:
+                        return "Error loading modules!"
+                    }
+                    return ""
+                }
+            }
+
+            Label {
+                x: 100
+                visible: !modulesLoadingText.visible && moduleView.count < 1
+                color: "#ababab"
+                text: "No modules"
+            }
+
+            TemplateDialog {
+                id: newModuleDialog
+                modulesPath: "project_modules/" + currentProject
+            }
+            
+            Repeater {
+                id: moduleView
+                model: moduleEventSource
+                DictionaryEditor {
+                    property string key: model.key
+                    x: 100
+                    keyString: model.key
+                    contents: model.contents
+                    basePath: "project_modules/" + currentProject + "/" + model.key
+                    onContentsChanged: {
+                        console.log("Contents changed", JSON.stringify(contents))
+                    }
+                }
+            }
         }
     }
 }

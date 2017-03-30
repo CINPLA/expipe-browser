@@ -32,5 +32,6 @@
         <file>Firebase.qml</file>
         <file>TemplatesView.qml</file>
         <file>BoundTextEdit.qml</file>
+        <file>TemplateDialog.qml</file>
     </qresource>
 </RCC>
