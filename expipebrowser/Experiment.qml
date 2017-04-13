@@ -146,6 +146,12 @@ Rectangle {
                 text: "Subjects"
             }
 
+            ExperimentListEdit {
+                experimentData: root.experimentData
+                property: "tags"
+                text: "Tags"
+            }
+
             Item {
                 width: 1
                 height: 24
@@ -244,7 +250,7 @@ Rectangle {
     //             fill: parent
     //             margins: 32
     //         }
-    // 
+    //
     //         text: "Code copied to clipboard\n\n" +
     //               "Paste it in a Jupyter Notebook to load the experiment."
     //         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
