@@ -295,7 +295,7 @@ Item {
                             id: textField
 
                             anchors.centerIn: parent
-
+                            selectByMouse: true
                             width: Math.max(64, contentWidth)
 
                             color: "#121212"
@@ -434,6 +434,7 @@ Item {
                 height: nameInput.height + 8
                 TextInput {
                     id: nameInput
+                    selectByMouse: true
                     width: 100
                     anchors.centerIn: parent
                     clip: true
@@ -470,7 +471,7 @@ Item {
                     id: valueInput
                     width: 160
                     clip: true
-
+                    selectByMouse: true 
                     anchors.centerIn: parent
                     MouseArea {
                         anchors.fill: parent

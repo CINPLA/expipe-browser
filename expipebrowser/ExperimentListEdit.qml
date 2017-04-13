@@ -100,6 +100,7 @@ Item {
 
                                 TextInput {
                                     id: textInput
+                                    selectByMouse: true
                                     text: backendText
                                     horizontalAlignment: Label.AlignLeft
                                     color: root.inputColor
@@ -133,6 +134,7 @@ Item {
                     visible: false
                     TextInput {
                         id: newInput
+                        selectByMouse: true 
                         text: ""
                         onEditingFinished: {
                             if(newInput.text === "") {

@@ -71,6 +71,7 @@ Item {
         }
         TextInput {
             id: textInput
+            selectByMouse: true 
             text: backendText
             width: 200
             horizontalAlignment: Label.AlignLeft
