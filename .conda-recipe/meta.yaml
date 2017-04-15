@@ -1,23 +1,46 @@
 package:
-    name: expipe-cli
+    name: expipe-browser
     version: {{ environ.get("GIT_TAG", "0.0.0_custom")|replace("v", "")|replace("-", "_") }}
 source:
     git_url: ..
 build:
     script: python setup.py install
-requirements:
-    build:
-        - future
-    run:
-        - future
-        - python
-        - expipe
-test:
-  script:
-    expipe --help
+ -  # noarch: python  # TODO Add back noarch when it works properly on Windows,
+ -                    # we are converting packages manually now
+ -  entry_points:
+ -    - expipe-browser = expipebrowser.main:main
+ -
+ -source:
+ -  path: .
+ -
+ -requirements:
+ -  build:
+ -    - python
+ -    - setuptools
+ -    - pip
+ -    - numpy
+ -    - quantities
+ -    - pyyaml
+ -    # - pyqt >=5 # TODO add this back when PyQt is delivered by conda-forge
+ -
+ -  run:
+ -    - python
+ -    - setuptools
+ -    - pip
+ -    - numpy
+ -    - scipy
+ -    - quantities
+ -    - pyyaml
+ -    - exdir
+ -    - expipe
+ -    - pyqt >=5
+ -
+ -test:
+ -  imports:
+ -    - expipebrowser
 about:
-    description: 'Command line interface for expipe with plugin infrastructure'
-    dev_url: https://github.com/CINPLA/expipe-cli
+    description: 'Experiment browser for expipe'
+    dev_url: https://github.com/CINPLA/expipe-browser
     license: GNU GPLv3
     license_family: GPL
     license_file: LICENSE
