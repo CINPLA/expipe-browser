@@ -227,7 +227,7 @@ Rectangle {
                     contents: model.contents
                     basePath: "action_modules/" + currentProject + "/" + experimentData.__key + "/" + model.key
                     onContentsChanged: {
-                        console.log("Contents changed", JSON.stringify(contents))
+                        console.log("Contents changed with length", contents.length)
                     }
                 }
             }

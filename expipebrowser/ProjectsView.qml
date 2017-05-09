@@ -300,7 +300,7 @@ Item {
                     contents: model.contents
                     basePath: "project_modules/" + currentProject + "/" + model.key
                     onContentsChanged: {
-                        console.log("Contents changed", JSON.stringify(contents))
+                        console.log("Contents changed with length", contents.length)
                     }
                 }
             }
