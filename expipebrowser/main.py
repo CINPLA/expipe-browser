@@ -220,6 +220,11 @@ class EventSource(QAbstractListModel):
         message = bytes(reply.readAll()).decode("utf-8")
         message = self._partial_message + message
         self._partial_message = parse_event_stream(message, self.processEvent)
+        
+        if self._partial_message:
+            print("WARNING: Received partial message, forcing update by an ugly hack.")
+            expipe.io.core.db.child(self._path).update({"__partial_update_hack": True}, expipe.io.core.user["idToken"])
+            expipe.io.core.db.child(self._path).update({"__partial_update_hack": None}, expipe.io.core.user["idToken"])
 
     def processFinished(self):
         reply = self.sender()
