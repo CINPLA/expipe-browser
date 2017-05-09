@@ -66,7 +66,7 @@ class EventSource(QAbstractListModel):
         self._manager = QNetworkAccessManager(self)
         self._include_helpers = False
         self._status = self.Status.Disconnected
-        self._reply_string = ""
+        self._partial_message = ""
         self._shallow = True
 
     def __del__(self):
@@ -116,7 +116,7 @@ class EventSource(QAbstractListModel):
         if self._reply is not None:
             self._reply.abort()
             self._reply = None
-        self._reply_string = ""
+        self._partial_message = None
 
     def reconnect(self, url):
         self.disconnect()
@@ -126,56 +126,100 @@ class EventSource(QAbstractListModel):
         self._reply.readyRead.connect(self.processReadyRead)
         self._reply.finished.connect(self.processFinished)
         self.status = self.Status.Connecting
-
-    def processReadyRead(self):
-        reply = self.sender()
-        if not reply:
-            return
-        self._reply_string += bytes(reply.readAll().trimmed()).decode("utf-8")
-        contents = self._reply_string
-        lines = contents.split("\n")
-        start_line = None
-        for i, line in enumerate(lines):
-            if line.startswith("event:"):
-                start_line = i
-        if start_line is None:
-            return
-        lines = lines[start_line:]  # skip everything before the event line
-        if len(lines) < 2:
-            return
-        eventLine = lines[0]
-        dataLine = lines[1]
-        if eventLine.startswith("event:") and dataLine.startswith("data:"):
-            eventLine = re.sub(r"^event:\s*", "", eventLine)
-            event_type = eventLine.strip()
-            dataLine = re.sub(r"^data:\s*", "", dataLine)
-            event_data = dataLine.strip()
+        
+    def processEvent(self, event_name, event_data):
+        if event_name == "put" or event_name == "patch":
             try:
-                message = json.loads(event_data, object_pairs_hook=OrderedDict) # sets path and data
-            except json.decoder.JSONDecodeError as e:
+                contents = json.loads(event_data, object_pairs_hook=OrderedDict)
+            except json.decoder.JSONDecodeError as ex:
+                print("ERROR: Could not decode on", self._path)
                 return
-            if message:
-                path_str = message["path"]
-                data = message["data"]
+                
+            if contents:
+                print("Message parsed", self._path)
+                path_str = contents["path"]
+                data = contents["data"]
                 path = path_str.split("/")
                 if path[0] == "":
                     del(path[0])
                 if path[-1] == "":
                     del(path[-1])
-                if event_type == "put":
+                if event_name == "put":
                     self.process_put(path, data)
                     self.put_received.emit(path, data)
-                elif event_type == "patch":
+                elif event_name == "patch":
                     for key in data:
                         self.process_put(path + [key], data[key])
                     self.patch_received.emit(path, data)
-            self.status = self.Status.Connected
-            self._reply_string = ""
-        else:
-            print("ERROR: Got corrupted event")
-            print("Contents:", contents)
-            self._reply_string = ""
+                self.status = self.Status.Connected
+            else:
+                print("event_data:", event_data)
+                print("event_name:", event_name)
+                print("ERROR: Got corrupted event")
+        
+    def processReadyRead(self):
+        reply = self.sender()
+        if not reply:
             return
+
+        message = bytes(reply.readAll()).decode("utf-8")
+        
+        if self._partial_message:
+            message = self._partial_message + message
+            self._partial_message = ""
+        
+        if not message.endswith("\n"):
+            self._partial_message = message
+            print("INFO: Partial message because it did not end with a newline on", self._path)
+            return
+            
+        # remove empty lines        
+        message_lines = []
+        for line in message.splitlines():
+            if line.strip() == "":
+                continue
+            message_lines.append(line)
+        
+        if len(message_lines) < 1:
+            return
+            
+        if not message_lines[0].startswith("event:"):
+            print("ERROR: EventSource: First line in message should start with 'event:' on", self._path)
+            return
+            
+        if not message_lines[-1].startswith("data:"):
+            self._partial_message = message
+            print("INFO: Partial message because last line does not start with 'data:' on", self._path)
+            return
+        
+        event_name = ""
+        event_data = ""
+
+        for line in message_lines:
+            line = line.strip()
+            splitline = line.split(":", 1)
+            if not len(splitline) > 1:
+                print("WARNING: EventSource: Caught line without ':':", line)
+                continue
+            (key, value) = splitline
+            key = key.strip()
+            value = value.strip()
+            
+            if key == "event":
+                event_name = value
+            elif key == "data":
+                event_data = value
+                self.processEvent(event_name, event_data)
+            elif key == "retry":
+                try:
+                    self.retry_timeout = int(value)  # TODO handle retry
+                    print("WARNING: Caught retry, but not implemented on", self._path)
+                except ValueError:
+                    pass
+            elif key == "":
+                print("INFO: Received comment:", value)
+            else:
+                raise Exception("Unknown key!")
 
     def processFinished(self):
         reply = self.sender()
