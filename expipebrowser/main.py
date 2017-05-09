@@ -44,6 +44,61 @@ def deep_convert_dict(layer):
     
 # TODO move classes to expipebrowser folder
 
+
+def parse_event_stream(message, process_event):
+    """
+    Returns partial message for caller to keep for next call.
+    """
+    if not message.endswith("\n"):
+        print("INFO: Returning partial message because it did not end with a newline.")
+        return message
+        
+    # remove empty lines        
+    message_lines = []
+    for line in message.splitlines():
+        if line.strip() == "":
+            continue
+        message_lines.append(line)
+
+    if len(message_lines) < 2:
+        print("INFO: Returning partial message because number of non-empty lines is < 2.")
+        return message
+        
+    if not message_lines[0].startswith("event:"):
+        print("ERROR: EventSource: First line in message should start with 'event:'. Skipping.")
+        return parse_event_stream("".join(message_lines[1:]))
+
+    event_name = ""
+    event_data = ""
+
+    for line in message_lines:
+        line = line.strip()
+        splitline = line.split(":", 1)
+        if not len(splitline) > 1:
+            print("WARNING: EventSource: Caught line without ':':", line)
+            continue
+        (key, value) = splitline
+        key = key.strip()
+        value = value.strip()
+        
+        if key == "event":
+            event_name = value
+        elif key == "data":
+            event_data = value
+            process_event(event_name, event_data)
+        elif key == "retry":
+            try:
+                # self.retry_timeout = int(value)  # TODO handle retry
+                print("WARNING: Caught retry, but not implemented.")
+            except ValueError:
+                pass
+        elif key == "":
+            print("INFO: Received comment:", value)
+        else:
+            raise Exception("Unknown key!")
+    return ""
+
+
 class EventSource(QAbstractListModel):
     key_role = Qt.UserRole + 1
     contents_role = Qt.UserRole + 2
@@ -116,7 +171,7 @@ class EventSource(QAbstractListModel):
         if self._reply is not None:
             self._reply.abort()
             self._reply = None
-        self._partial_message = None
+        self._partial_message = ""
 
     def reconnect(self, url):
         self.disconnect()
@@ -163,63 +218,8 @@ class EventSource(QAbstractListModel):
             return
 
         message = bytes(reply.readAll()).decode("utf-8")
-        
-        if self._partial_message:
-            message = self._partial_message + message
-            self._partial_message = ""
-        
-        if not message.endswith("\n"):
-            self._partial_message = message
-            print("INFO: Partial message because it did not end with a newline on", self._path)
-            return
-            
-        # remove empty lines        
-        message_lines = []
-        for line in message.splitlines():
-            if line.strip() == "":
-                continue
-            message_lines.append(line)
-        
-        if len(message_lines) < 1:
-            return
-            
-        if not message_lines[0].startswith("event:"):
-            print("ERROR: EventSource: First line in message should start with 'event:' on", self._path)
-            return
-            
-        if not message_lines[-1].startswith("data:"):
-            self._partial_message = message
-            print("INFO: Partial message because last line does not start with 'data:' on", self._path)
-            return
-        
-        event_name = ""
-        event_data = ""
-
-        for line in message_lines:
-            line = line.strip()
-            splitline = line.split(":", 1)
-            if not len(splitline) > 1:
-                print("WARNING: EventSource: Caught line without ':':", line)
-                continue
-            (key, value) = splitline
-            key = key.strip()
-            value = value.strip()
-            
-            if key == "event":
-                event_name = value
-            elif key == "data":
-                event_data = value
-                self.processEvent(event_name, event_data)
-            elif key == "retry":
-                try:
-                    self.retry_timeout = int(value)  # TODO handle retry
-                    print("WARNING: Caught retry, but not implemented on", self._path)
-                except ValueError:
-                    pass
-            elif key == "":
-                print("INFO: Received comment:", value)
-            else:
-                raise Exception("Unknown key!")
+        message = self._partial_message + message
+        self._partial_message = parse_event_stream(message, self.processEvent)
 
     def processFinished(self):
         reply = self.sender()
