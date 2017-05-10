@@ -344,7 +344,7 @@ class ActionProxy(QSortFilterProxyModel):
     def __init__(self, parent):
         super().__init__(parent)
         self._query = ""
-        self._tags = ""
+        self._requirements = {}
 
     def query(self):
         return self._query
@@ -364,21 +364,22 @@ class ActionProxy(QSortFilterProxyModel):
         if self._query not in key:
             return False
 
-        if len(self._tags) > 0:
-            try:
-                for tag in self._tags:
-                    if tag not in contents["tags"]:
+        try:
+            for name, tag_list in self._requirements.items():
+                for tag in tag_list:
+                    print("Finding", tag, "in", name)
+                    if tag not in contents[name]:
                         return False
-            except:
-                return False
+        except KeyError:
+            return False
 
         return True
 
-    @pyqtSlot(str)
-    def setTags(self, tags):
+    @pyqtSlot(str, str)
+    def setRequirement(self, name, tags):
         tag_list = tags.split(";")
         tag_list = list(filter(None, tag_list))
-        self._tags = tag_list
+        self._requirements[name] = tag_list
         self.invalidateFilter()
 
     queryChanged = pyqtSignal()

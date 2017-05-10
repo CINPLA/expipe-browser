@@ -112,7 +112,7 @@ Rectangle {
                     selection.forEach(function(rowIndex) {
                         tags = tags + ";" + model.get(rowIndex)
                     })
-                    actionProxy.setTags(tags)
+                    actionProxy.setRequirement("tags", tags)
                 }
                 TableViewColumn {
                     role: "tag"
