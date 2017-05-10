@@ -26,9 +26,8 @@ Rectangle {
 
     onCurrentProjectChanged: {
         experiments = {}
-        searchModel.clear()
     }
-    
+
     color: "#efefef"
     border {
         color: "#dedede"
@@ -45,51 +44,18 @@ Rectangle {
         }
     }
 
-    function refreshSearchModel() {
-        bindingEnabled = false
-        var previousId
-        if(listView.currentItem) {
-            previousId = listView.currentItem.key
-        }
-        searchModel.clear()
-        for(var i = 0; i < eventSource.rowCount(); i++) {
-            var experiment = eventSource.data(eventSource.index(i, 0), 258)
-            var key = eventSource.data(eventSource.index(i, 0), 257)
-            var found = true
-            var needle = searchField.text
-            if(needle !== "") {
-                var haystack = JSON.stringify(experiment)
-                if(haystack.indexOf(needle) > -1) {
-                    found = true
-                } else {
-                    found = false
-                }
-            }
-            if(found) {
-                searchModel.append({index: i, key: key})
-            }
-        }
-        for(var i = 0; i < searchModel.count; i++) {
-            if(searchModel.get(i).key === previousId) {
-                currentIndex = i
-            }
-        }
-        bindingEnabled = true
-    }
-
-    ListModel {
-        id: searchModel
-    }
-
     EventSource {
         id: eventSource
         path: "actions/" + currentProject
         includeHelpers: true
-        onPutReceived: {
-            refreshSearchModel()
-        }
     }
-    
+
+    ActionProxy {
+        id: actionProxy
+        sourceModel: eventSource
+        query: searchField.text
+    }
+
     Rectangle {
         id: stuff
         anchors {
@@ -120,13 +86,9 @@ Rectangle {
             }
 
             placeholderText: "Search"
-
-            onTextChanged: {
-                refreshSearchModel()
-            }
         }
     }
-    
+
     QQC1.ScrollView {
         anchors {
             top: stuff.bottom
@@ -138,7 +100,7 @@ Rectangle {
             id: listView
             anchors.fill: parent
             clip: true
-            model: searchModel
+            model: actionProxy
 
             highlightMoveDuration: 0
             highlight: Rectangle {
@@ -148,7 +110,7 @@ Rectangle {
             delegate: Rectangle {
                 readonly property var index: model.index
                 readonly property var key: model.key
-                readonly property var modelData: eventSource.data(eventSource.index(index, 0), 258)
+                readonly property var modelData: model.contents
                 anchors {
                     left: parent.left
                     right: parent.right
