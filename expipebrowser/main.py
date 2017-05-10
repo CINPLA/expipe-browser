@@ -344,6 +344,7 @@ class ActionProxy(QSortFilterProxyModel):
     def __init__(self, parent):
         super().__init__(parent)
         self._query = ""
+        self._tags = ""
 
     def query(self):
         return self._query
@@ -360,14 +361,98 @@ class ActionProxy(QSortFilterProxyModel):
         key = source.data(source.index(sourceRow, 0, sourceParent), EventSource.key_role)
         contents = source.data(source.index(sourceRow, 0, sourceParent), EventSource.contents_role)
 
-        if self._query in key:
-            return True
+        if self._query not in key:
+            return False
 
-        return False
+        if len(self._tags) > 0:
+            try:
+                for tag in self._tags:
+                    if tag not in contents["tags"]:
+                        return False
+            except:
+                return False
+
+        return True
+
+    @pyqtSlot(str)
+    def setTags(self, tags):
+        tag_list = tags.split(";")
+        tag_list = list(filter(None, tag_list))
+        self._tags = tag_list
+        self.invalidateFilter()
 
     queryChanged = pyqtSignal()
 
     query = pyqtProperty(str, query, setQuery, notify=queryChanged)
+
+
+class ActionTagModel(QAbstractListModel):
+    TAG_ROLE = Qt.UserRole + 1
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._tags = []
+        self._source = None
+
+    def source(self):
+        return self._source
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._tags)
+
+    def data(self, index, role):
+        if role != self.TAG_ROLE:
+            return None
+
+        try:
+            return self._tags[index.row()]
+        except IndexError:
+            return None
+
+    def roleNames(self):
+        return {
+            self.TAG_ROLE: b"tag"
+        }
+
+    @pyqtSlot(int, result=str)
+    def get(self, row):
+        return self._tags[row]
+
+    def setSource(self, source):
+        if source == self._source:
+            return
+        self._source = source
+        self._source.contentsChanged.connect(self.sourceContentsChanged)
+        self.updateModelFromSource()
+        self.dataChanged.emit(QModelIndex(), QModelIndex())
+
+    def updateModelFromSource(self):
+        self.beginRemoveRows(QModelIndex(), 0, self.rowCount() - 1)
+        self._tags = OrderedDict({})
+        self.endRemoveRows()
+
+
+        tags = set()
+        contents = self._source._contents
+        for key, val in contents.items():
+            try:
+                if "tags" in val:
+                    for tag in val["tags"]:
+                        tags.add(tag)
+            except:
+                print("ERROR: Unexpected value of key", key)
+
+        self.beginInsertRows(QModelIndex(), 0, len(tags) - 1)
+        self._tags = list(tags)
+        self.endInsertRows()
+
+
+
+    def sourceContentsChanged(self):
+        self.updateModelFromSource()
+
+    sourceChanged = pyqtSignal()
+    source = pyqtProperty(EventSource, source, setSource, notify=sourceChanged)
 
 
 class Clipboard(QObject):
@@ -408,6 +493,7 @@ def main():
     app = QApplication(sys.argv)
     qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "EventSource")
     qmlRegisterType(ActionProxy, "ExpipeBrowser", 1, 0, "ActionProxy")
+    qmlRegisterType(ActionTagModel, "ExpipeBrowser", 1, 0, "ActionTagModel")
     qmlRegisterSingletonType(Pyrebase, "ExpipeBrowser", 1, 0, "Pyrebase", pyrebase_instance)
     qmlRegisterType(Clipboard, "ExpipeBrowser", 1, 0, "Clipboard")
 

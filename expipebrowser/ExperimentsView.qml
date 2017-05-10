@@ -22,7 +22,7 @@ Item {
             top: parent.top
             bottom: parent.bottom
         }
-        width: 400
+        width: 640
         currentProject: root.currentProject
     }
 

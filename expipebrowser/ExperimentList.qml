@@ -57,14 +57,99 @@ Rectangle {
     }
 
     Rectangle {
-        id: stuff
+        id: filtering
         anchors {
             left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+        }
+
+        width: 240
+        color: "#ddd"
+
+        Column {
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+                margins: 8
+            }
+
+            Label {
+                text: "Filter"
+                font.pixelSize: 24
+                font.weight: Font.Light
+            }
+
+            Label {
+                text: "Action name:"
+            }
+
+            TextField {
+                id: searchField
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                }
+
+                placeholderText: "Search"
+            }
+
+            TableView {
+                id: tagListView
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                }
+                height: 300
+                model: ActionTagModel {
+                    source: eventSource
+                }
+                selectionMode: SelectionMode.MultiSelection
+                selection.onSelectionChanged: {
+                    var tags = ""
+                    selection.forEach(function(rowIndex) {
+                        tags = tags + ";" + model.get(rowIndex)
+                    })
+                    actionProxy.setTags(tags)
+                }
+                TableViewColumn {
+                    role: "tag"
+                    title: "Tag"
+                    width: 100
+                }
+                // delegate: Item {
+                //     anchors {
+                //         left: parent.left
+                //         right: parent.right
+                //     }
+                //     height: 40
+                //     Text {
+                //         text: tag
+                //         anchors {
+                //             left: parent.left
+                //             leftMargin: 8
+                //             verticalCenter: parent.verticalCenter
+                //         }
+                //     }
+                //     MouseArea {
+                //         anchors.fill: parent
+                //         onClicked: tagListView.
+                //     }
+                // }
+            }
+        }
+    }
+
+    Rectangle {
+        id: stuff
+        anchors {
+            left: filtering.right
             right: parent.right
             top: parent.top
         }
         color: "#cecece"
-        height: searchField.height + 24
 
         Text {
             anchors {
@@ -76,17 +161,6 @@ Rectangle {
 
             text: listView.count + " actions"
         }
-
-        TextField {
-            id: searchField
-            anchors {
-                right: parent.right
-                verticalCenter: parent.verticalCenter
-                margins: 16
-            }
-
-            placeholderText: "Search"
-        }
     }
 
     QQC1.ScrollView {
@@ -94,7 +168,7 @@ Rectangle {
             top: stuff.bottom
             bottom: parent.bottom
             right: parent.right
-            left: parent.left
+            left: filtering.right
         }
         ListView {
             id: listView
