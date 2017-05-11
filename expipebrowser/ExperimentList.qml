@@ -26,9 +26,8 @@ Rectangle {
 
     onCurrentProjectChanged: {
         experiments = {}
-        searchModel.clear()
     }
-    
+
     color: "#efefef"
     border {
         color: "#dedede"
@@ -45,60 +44,248 @@ Rectangle {
         }
     }
 
-    function refreshSearchModel() {
-        bindingEnabled = false
-        var previousId
-        if(listView.currentItem) {
-            previousId = listView.currentItem.key
-        }
-        searchModel.clear()
-        for(var i = 0; i < eventSource.rowCount(); i++) {
-            var experiment = eventSource.data(eventSource.index(i, 0), 258)
-            var key = eventSource.data(eventSource.index(i, 0), 257)
-            var found = true
-            var needle = searchField.text
-            if(needle !== "") {
-                var haystack = JSON.stringify(experiment)
-                if(haystack.indexOf(needle) > -1) {
-                    found = true
-                } else {
-                    found = false
-                }
-            }
-            if(found) {
-                searchModel.append({index: i, key: key})
-            }
-        }
-        for(var i = 0; i < searchModel.count; i++) {
-            if(searchModel.get(i).key === previousId) {
-                currentIndex = i
-            }
-        }
-        bindingEnabled = true
-    }
-
-    ListModel {
-        id: searchModel
-    }
-
     EventSource {
         id: eventSource
         path: "actions/" + currentProject
         includeHelpers: true
-        onPutReceived: {
-            refreshSearchModel()
+    }
+
+    ActionProxy {
+        id: actionProxy
+        sourceModel: eventSource
+        query: searchField.text
+    }
+
+    Rectangle {
+        id: filtering
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+        }
+
+        width: 240
+        color: "#ddd"
+
+        Column {
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+                margins: 8
+            }
+
+            Label {
+                text: "Filter"
+                font.pixelSize: 24
+                font.weight: Font.Light
+            }
+
+            Label {
+                text: "Action name:"
+            }
+
+            TextField {
+                id: searchField
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                }
+
+                placeholderText: "Search"
+            }
+
+            TableView {
+                id: tagListView
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                }
+                height: 175
+                model: ActionAttributeModel {
+                    source: eventSource
+                    name: 'tags'
+                }
+                selectionMode: SelectionMode.MultiSelection
+                selection.onSelectionChanged: {
+                    var tags = ""
+                    selection.forEach(function(rowIndex) {
+                        tags = tags + ";" + model.get(rowIndex)
+                    })
+                    actionProxy.setRequirement("tags", tags)
+                }
+                TableViewColumn {
+                    role: "attribute"
+                    title: "Tag"
+                    width: 100
+                }
+                // delegate: Item {
+                //     anchors {
+                //         left: parent.left
+                //         right: parent.right
+                //     }
+                //     height: 40
+                //     Text {
+                //         text: tag
+                //         anchors {
+                //             left: parent.left
+                //             leftMargin: 8
+                //             verticalCenter: parent.verticalCenter
+                //         }
+                //     }
+                //     MouseArea {
+                //         anchors.fill: parent
+                //         onClicked: tagListView.
+                //     }
+                // }
+            }
+            TableView {
+                id: subjectListView
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: tagListView.bottom
+                }
+                height: 175
+                model: ActionAttributeModel {
+                    source: eventSource
+                    name: 'subjects'
+                }
+                selectionMode: SelectionMode.MultiSelection
+                selection.onSelectionChanged: {
+                    var tags = ""
+                    selection.forEach(function(rowIndex) {
+                        tags = tags + ";" + model.get(rowIndex)
+                    })
+                    actionProxy.setRequirement("subjects", tags)
+                }
+                TableViewColumn {
+                    role: "attribute"
+                    title: "Subject"
+                    width: 100
+                }
+                TableView {
+                    id: typeListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: subjectListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'type'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("type", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "Action type"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: locationListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: typeListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'location'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("location", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "Location"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: userListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: locationListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'users'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("users", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "User"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: datetimeListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: userListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'datetime'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("datetime", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "datetime"
+                        width: 100
+                    }
+                }
+            }
         }
     }
-    
+
     Rectangle {
         id: stuff
         anchors {
-            left: parent.left
+            left: filtering.right
             right: parent.right
             top: parent.top
         }
         color: "#cecece"
-        height: searchField.height + 24
 
         Text {
             anchors {
@@ -110,35 +297,20 @@ Rectangle {
 
             text: listView.count + " actions"
         }
-
-        TextField {
-            id: searchField
-            anchors {
-                right: parent.right
-                verticalCenter: parent.verticalCenter
-                margins: 16
-            }
-
-            placeholderText: "Search"
-
-            onTextChanged: {
-                refreshSearchModel()
-            }
-        }
     }
-    
+
     QQC1.ScrollView {
         anchors {
             top: stuff.bottom
             bottom: parent.bottom
             right: parent.right
-            left: parent.left
+            left: filtering.right
         }
         ListView {
             id: listView
             anchors.fill: parent
             clip: true
-            model: searchModel
+            model: actionProxy
 
             highlightMoveDuration: 0
             highlight: Rectangle {
@@ -148,7 +320,7 @@ Rectangle {
             delegate: Rectangle {
                 readonly property var index: model.index
                 readonly property var key: model.key
-                readonly property var modelData: eventSource.data(eventSource.index(index, 0), 258)
+                readonly property var modelData: model.contents
                 anchors {
                     left: parent.left
                     right: parent.right

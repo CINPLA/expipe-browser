@@ -3,7 +3,7 @@
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    # TODO remove this OpenGL fix when PyQt doesn't require OpenGL to be loaded first. 
+    # TODO remove this OpenGL fix when PyQt doesn't require OpenGL to be loaded first.
     # NOTE This must be placed before any other imports!
     import ctypes
     from ctypes.util import find_library
@@ -17,7 +17,7 @@ import json
 import urllib
 from collections import OrderedDict
 
-from PyQt5.QtCore import Q_ENUMS, pyqtProperty, pyqtSignal, pyqtSlot, Qt, QObject, QUrl, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant
+from PyQt5.QtCore import Q_ENUMS, pyqtProperty, pyqtSignal, pyqtSlot, Qt, QObject, QUrl, QRegularExpression, QByteArray, QStandardPaths, QAbstractListModel, QModelIndex, QVariant, QSortFilterProxyModel
 from PyQt5.QtWidgets import QApplication
 #from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager, QNetworkDiskCache
@@ -41,7 +41,7 @@ def deep_convert_dict(layer):
         pass
 
     return to_ret
-    
+
 # TODO move classes to expipebrowser folder
 
 
@@ -52,8 +52,8 @@ def parse_event_stream(message, process_event):
     if not message.endswith("\n"):
         print("INFO: Returning partial message because it did not end with a newline.")
         return message
-        
-    # remove empty lines        
+
+    # remove empty lines
     message_lines = []
     for line in message.splitlines():
         if line.strip() == "":
@@ -63,7 +63,7 @@ def parse_event_stream(message, process_event):
     if len(message_lines) < 2:
         print("INFO: Returning partial message because number of non-empty lines is < 2.")
         return message
-        
+
     if not message_lines[0].startswith("event:"):
         print("ERROR: EventSource: First line in message should start with 'event:'. Skipping.")
         return parse_event_stream("".join(message_lines[1:]))
@@ -80,7 +80,7 @@ def parse_event_stream(message, process_event):
         (key, value) = splitline
         key = key.strip()
         value = value.strip()
-        
+
         if key == "event":
             event_name = value
         elif key == "data":
@@ -181,7 +181,7 @@ class EventSource(QAbstractListModel):
         self._reply.readyRead.connect(self.processReadyRead)
         self._reply.finished.connect(self.processFinished)
         self.status = self.Status.Connecting
-        
+
     def processEvent(self, event_name, event_data):
         if event_name == "put" or event_name == "patch":
             try:
@@ -189,7 +189,7 @@ class EventSource(QAbstractListModel):
             except json.decoder.JSONDecodeError as ex:
                 print("ERROR: Could not decode on", self._path)
                 return
-                
+
             if contents:
                 print("Message parsed", self._path)
                 path_str = contents["path"]
@@ -211,7 +211,7 @@ class EventSource(QAbstractListModel):
                 print("event_data:", event_data)
                 print("event_name:", event_name)
                 print("ERROR: Got corrupted event")
-        
+
     def processReadyRead(self):
         reply = self.sender()
         if not reply:
@@ -220,7 +220,7 @@ class EventSource(QAbstractListModel):
         message = bytes(reply.readAll()).decode("utf-8")
         message = self._partial_message + message
         self._partial_message = parse_event_stream(message, self.processEvent)
-        
+
         if self._partial_message:
             print("WARNING: Received partial message, forcing update by an ugly hack.")
             expipe.io.core.db.child(self._path).update({"__partial_update_hack": True}, expipe.io.core.user["idToken"])
@@ -285,7 +285,7 @@ class EventSource(QAbstractListModel):
                 return None
         else:
             return None
-            
+
     def contents(self):
         return deep_convert_dict(self._contents)
 
@@ -314,10 +314,10 @@ class EventSource(QAbstractListModel):
             # return value should only be used in the above case
             # where not isinstance(dic, dict)
             return dic[path[-1]]
-    
+
     def shallow(self):
         return self._shallow
-        
+
     def setShallow(self, value):
         if self._shallow == value:
             return
@@ -338,6 +338,133 @@ class EventSource(QAbstractListModel):
 
     put_received = pyqtSignal(["QVariant", "QVariant"], name="putReceived", arguments=["path", "data"])
     patch_received = pyqtSignal(["QVariant", "QVariant"], name="patchReceived", arguments=["path", "data"])
+
+
+class ActionProxy(QSortFilterProxyModel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._query = ""
+        self._requirements = {}
+
+    def query(self):
+        return self._query
+
+    def setQuery(self, query):
+        if self._query == query:
+            return
+        self._query = query
+        self.invalidateFilter()
+        self.queryChanged.emit()
+
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        source = self.sourceModel()
+        key = source.data(source.index(sourceRow, 0, sourceParent), EventSource.key_role)
+        contents = source.data(source.index(sourceRow, 0, sourceParent), EventSource.contents_role)
+
+        if self._query not in key:
+            return False
+
+        try:
+            for name, attribute_list in self._requirements.items():
+                for attribute in attribute_list:
+                    print("Finding", attribute, "in", name)
+                    if attribute not in contents[name]:
+                        return False
+        except KeyError or TypeError:
+            return False
+
+        return True
+
+    @pyqtSlot(str, str)
+    def setRequirement(self, name, attributes):
+        attribute_list = attributes.split(";")
+        attribute_list = list(filter(None, attribute_list))
+        self._requirements[name] = attribute_list
+        self.invalidateFilter()
+
+    queryChanged = pyqtSignal()
+
+    query = pyqtProperty(str, query, setQuery, notify=queryChanged)
+
+
+class ActionAttributeModel(QAbstractListModel):
+    TAG_ROLE = Qt.UserRole + 1
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._attributes = []
+        self._source = None
+        self._name = None
+
+    def source(self):
+        return self._source
+
+    def name(self):
+        return self._name
+
+    def setName(self, name):
+        if self._name == name:
+            return
+        self._name = name
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._attributes)
+
+    def data(self, index, role):
+        if role != self.TAG_ROLE:
+            return None
+
+        try:
+            return self._attributes[index.row()]
+        except IndexError:
+            return None
+
+    def roleNames(self):
+        return {
+            self.TAG_ROLE: b"attribute"
+        }
+
+    @pyqtSlot(int, result=str)
+    def get(self, row):
+        return self._attributes[row]
+
+    def setSource(self, source):
+        if source == self._source:
+            return
+        self._source = source
+        self._source.contentsChanged.connect(self.sourceContentsChanged)
+        self.updateModelFromSource()
+        self.dataChanged.emit(QModelIndex(), QModelIndex())
+
+    def updateModelFromSource(self):
+        self.beginRemoveRows(QModelIndex(), 0, self.rowCount() - 1)
+        self._attributes = OrderedDict({})
+        self.endRemoveRows()
+
+        attributes = set()
+        contents = self._source._contents
+        for key, val in contents.items():
+            try:
+                if self._name in val:
+                    if isinstance(val[self._name], OrderedDict):
+                        for attribute in val[self._name]:
+                            attributes.add(attribute)
+                    elif isinstance(val[self._name], str):
+                        attributes.add(val[self._name])
+            except:
+                print("ERROR: Unexpected value of key", key)
+
+        self.beginInsertRows(QModelIndex(), 0, len(attributes) - 1)
+        self._attributes = sorted(list(attributes))
+        self.endInsertRows()
+
+    def sourceContentsChanged(self):
+        self.updateModelFromSource()
+
+    sourceChanged = pyqtSignal()
+    source = pyqtProperty(EventSource, source, setSource, notify=sourceChanged)
+    name = pyqtProperty(str, name, setName)
+
 
 class Clipboard(QObject):
     def __init__(self, parent=None):
@@ -376,6 +503,8 @@ class NetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory):
 def main():
     app = QApplication(sys.argv)
     qmlRegisterType(EventSource, "ExpipeBrowser", 1, 0, "EventSource")
+    qmlRegisterType(ActionProxy, "ExpipeBrowser", 1, 0, "ActionProxy")
+    qmlRegisterType(ActionAttributeModel, "ExpipeBrowser", 1, 0, "ActionAttributeModel")
     qmlRegisterSingletonType(Pyrebase, "ExpipeBrowser", 1, 0, "Pyrebase", pyrebase_instance)
     qmlRegisterType(Clipboard, "ExpipeBrowser", 1, 0, "Clipboard")
 
@@ -387,7 +516,7 @@ def main():
     engine.load(QUrl("qrc:/main.qml"))
 
     return app.exec_()
-            
+
 
 if __name__ == "__main__":
     sys.exit(main())
