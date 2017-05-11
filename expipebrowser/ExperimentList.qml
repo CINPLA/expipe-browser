@@ -102,9 +102,10 @@ Rectangle {
                     left: parent.left
                     right: parent.right
                 }
-                height: 300
-                model: ActionTagModel {
+                height: 175
+                model: ActionAttributeModel {
                     source: eventSource
+                    name: 'tags'
                 }
                 selectionMode: SelectionMode.MultiSelection
                 selection.onSelectionChanged: {
@@ -115,7 +116,7 @@ Rectangle {
                     actionProxy.setRequirement("tags", tags)
                 }
                 TableViewColumn {
-                    role: "tag"
+                    role: "attribute"
                     title: "Tag"
                     width: 100
                 }
@@ -138,6 +139,141 @@ Rectangle {
                 //         onClicked: tagListView.
                 //     }
                 // }
+            }
+            TableView {
+                id: subjectListView
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: tagListView.bottom
+                }
+                height: 175
+                model: ActionAttributeModel {
+                    source: eventSource
+                    name: 'subjects'
+                }
+                selectionMode: SelectionMode.MultiSelection
+                selection.onSelectionChanged: {
+                    var tags = ""
+                    selection.forEach(function(rowIndex) {
+                        tags = tags + ";" + model.get(rowIndex)
+                    })
+                    actionProxy.setRequirement("subjects", tags)
+                }
+                TableViewColumn {
+                    role: "attribute"
+                    title: "Subject"
+                    width: 100
+                }
+                TableView {
+                    id: typeListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: subjectListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'type'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("type", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "Action type"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: locationListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: typeListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'location'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("location", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "Location"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: userListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: locationListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'users'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("users", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "User"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: datetimeListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: userListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'datetime'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("datetime", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "datetime"
+                        width: 100
+                    }
+                }
             }
         }
     }
