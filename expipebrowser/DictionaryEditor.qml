@@ -389,17 +389,22 @@ Item {
                         Loader {
                             id: loader
 
-                            Component.onCompleted: {
-                                var subPath = column.path.slice()
-                                subPath.push(modelData.key)
-                                setSource("DictionaryEditor.qml", {
-                                              parentEditor: column,
-                                              contents: column.contents,
-                                              path: subPath,
-                                              isLastItem: (index === repeater.count - 1),
-                                              isRoot: false,
-                                              basePath: column.basePath
-                                          })
+                            Connections {
+                                target: column
+                                onExpandedChanged: {
+                                    if(column.expanded) {
+                                        var subPath = column.path.slice()
+                                        subPath.push(modelData.key)
+                                        loader.setSource("DictionaryEditor.qml", {
+                                                      parentEditor: column,
+                                                      contents: column.contents,
+                                                      path: subPath,
+                                                      isLastItem: (index === repeater.count - 1),
+                                                      isRoot: false,
+                                                      basePath: column.basePath
+                                                  })
+                                      }
+                                  }
                             }
 
                             Connections {

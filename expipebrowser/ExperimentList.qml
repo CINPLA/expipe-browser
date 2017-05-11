@@ -67,112 +67,114 @@ Rectangle {
         width: 240
         color: "#ddd"
 
-        Column {
-            anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
-                margins: 8
-            }
-
-            Label {
-                text: "Filter"
-                font.pixelSize: 24
-                font.weight: Font.Light
-            }
-
-            Label {
-                text: "Action name:"
-            }
-
-            TextField {
-                id: searchField
+        ScrollView {
+            anchors.fill: parent
+            
+            Column {
                 anchors {
+                    top: parent.top
                     left: parent.left
                     right: parent.right
+                    margins: 8
                 }
 
-                placeholderText: "Search"
-            }
+                Label {
+                    text: "Filter"
+                    font.pixelSize: 24
+                    font.weight: Font.Light
+                }
 
-            TableView {
-                id: tagListView
+                Label {
+                    text: "Action name:"
+                }
 
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                }
-                height: 175
-                model: ActionAttributeModel {
-                    source: eventSource
-                    name: 'tags'
-                }
-                selectionMode: SelectionMode.MultiSelection
-                selection.onSelectionChanged: {
-                    var tags = ""
-                    selection.forEach(function(rowIndex) {
-                        tags = tags + ";" + model.get(rowIndex)
-                    })
-                    actionProxy.setRequirement("tags", tags)
-                }
-                TableViewColumn {
-                    role: "attribute"
-                    title: "Tag"
-                    width: 100
-                }
-                // delegate: Item {
-                //     anchors {
-                //         left: parent.left
-                //         right: parent.right
-                //     }
-                //     height: 40
-                //     Text {
-                //         text: tag
-                //         anchors {
-                //             left: parent.left
-                //             leftMargin: 8
-                //             verticalCenter: parent.verticalCenter
-                //         }
-                //     }
-                //     MouseArea {
-                //         anchors.fill: parent
-                //         onClicked: tagListView.
-                //     }
-                // }
-            }
-            TableView {
-                id: subjectListView
+                TextField {
+                    id: searchField
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                    }
 
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: tagListView.bottom
+                    placeholderText: "Search"
                 }
-                height: 175
-                model: ActionAttributeModel {
-                    source: eventSource
-                    name: 'subjects'
-                }
-                selectionMode: SelectionMode.MultiSelection
-                selection.onSelectionChanged: {
-                    var tags = ""
-                    selection.forEach(function(rowIndex) {
-                        tags = tags + ";" + model.get(rowIndex)
-                    })
-                    actionProxy.setRequirement("subjects", tags)
-                }
-                TableViewColumn {
-                    role: "attribute"
-                    title: "Subject"
-                    width: 100
-                }
+
                 TableView {
-                    id: typeListView
+                    id: tagListView
 
                     anchors {
                         left: parent.left
                         right: parent.right
-                        top: subjectListView.bottom
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'tags'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("tags", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "Tag"
+                        width: 100
+                    }
+                    // delegate: Item {
+                    //     anchors {
+                    //         left: parent.left
+                    //         right: parent.right
+                    //     }
+                    //     height: 40
+                    //     Text {
+                    //         text: tag
+                    //         anchors {
+                    //             left: parent.left
+                    //             leftMargin: 8
+                    //             verticalCenter: parent.verticalCenter
+                    //         }
+                    //     }
+                    //     MouseArea {
+                    //         anchors.fill: parent
+                    //         onClicked: tagListView.
+                    //     }
+                    // }
+                }
+                TableView {
+                    id: subjectListView
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                    }
+                    height: 175
+                    model: ActionAttributeModel {
+                        source: eventSource
+                        name: 'subjects'
+                    }
+                    selectionMode: SelectionMode.MultiSelection
+                    selection.onSelectionChanged: {
+                        var tags = ""
+                        selection.forEach(function(rowIndex) {
+                            tags = tags + ";" + model.get(rowIndex)
+                        })
+                        actionProxy.setRequirement("subjects", tags)
+                    }
+                    TableViewColumn {
+                        role: "attribute"
+                        title: "Subject"
+                        width: 100
+                    }
+                }
+                TableView {
+                    id: typeListView
+                    
+                    anchors {
+                        left: parent.left
+                        right: parent.right
                     }
                     height: 175
                     model: ActionAttributeModel {
@@ -195,11 +197,10 @@ Rectangle {
                 }
                 TableView {
                     id: locationListView
-
+                    
                     anchors {
                         left: parent.left
                         right: parent.right
-                        top: typeListView.bottom
                     }
                     height: 175
                     model: ActionAttributeModel {
@@ -222,11 +223,10 @@ Rectangle {
                 }
                 TableView {
                     id: userListView
-
+                    
                     anchors {
                         left: parent.left
                         right: parent.right
-                        top: locationListView.bottom
                     }
                     height: 175
                     model: ActionAttributeModel {
@@ -249,11 +249,10 @@ Rectangle {
                 }
                 TableView {
                     id: datetimeListView
-
+                    
                     anchors {
                         left: parent.left
                         right: parent.right
-                        top: userListView.bottom
                     }
                     height: 175
                     model: ActionAttributeModel {

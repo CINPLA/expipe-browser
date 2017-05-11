@@ -366,9 +366,12 @@ class ActionProxy(QSortFilterProxyModel):
 
         try:
             for name, attribute_list in self._requirements.items():
-                for attribute in attribute_list:
-                    print("Finding", attribute, "in", name)
-                    if attribute not in contents[name]:
+                if len(attribute_list) > 0:
+                    matched_attributes = False
+                    for attribute in attribute_list:
+                        if attribute in contents[name]:
+                            matched_attributes = True
+                    if not matched_attributes:
                         return False
         except KeyError or TypeError:
             return False
