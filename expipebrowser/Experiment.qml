@@ -60,22 +60,42 @@ Rectangle {
         contentHeight: container.height + 360
         // ScrollBar.vertical: ScrollBar {}
 
-        Button {
-            id: codeButton
-            property string snippet: "import expipe.io\n" +
-                                     "project = expipe.io.get_project('" + experimentData.project+ "')\n" +
-                                     "action = project.require_action('" + experimentData.__key + "')\n" +
-                                     "# continue working with action"
+        Row {
             anchors {
                 right: parent.right
                 top: parent.top
                 rightMargin: 48
                 topMargin: 96
             }
-            text: "Copy Python code"
-            onClicked: {
-                clipboard.setText(snippet)
-                codePopup.open()
+            Button {
+                id: codeButton
+                property string snippet: "import expipe.io\n" +
+                                         "project = expipe.io.get_project('" + experimentData.project+ "')\n" +
+                                         "action = project.require_action('" + experimentData.__key + "')\n" +
+                                         "# continue working with action"
+                text: "Copy Python code"
+                onClicked: {
+                    clipboard.setText(snippet)
+                    codePopup.open()
+                }
+            }
+            
+            Button {
+                text: "Delete"
+                onClicked: {
+                    deleteDialog.open()
+                }
+            }
+        }
+        
+        Dialog {
+            id: deleteDialog
+            title: "Are you sure?"
+            standardButtons: Dialog.Cancel | Dialog.Ok
+            onAccepted: {
+                Firebase.remove("actions/" + currentProject + "/" + experimentData.__key, function(reply) {
+                    console.log("Removed and got reply", reply.responseText)
+                })
             }
         }
 
