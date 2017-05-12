@@ -69,7 +69,7 @@ Rectangle {
 
         ScrollView {
             anchors.fill: parent
-            
+
             Column {
                 anchors {
                     top: parent.top
@@ -171,7 +171,7 @@ Rectangle {
                 }
                 TableView {
                     id: typeListView
-                    
+
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -197,7 +197,7 @@ Rectangle {
                 }
                 TableView {
                     id: locationListView
-                    
+
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -223,7 +223,7 @@ Rectangle {
                 }
                 TableView {
                     id: userListView
-                    
+
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -249,7 +249,7 @@ Rectangle {
                 }
                 TableView {
                     id: datetimeListView
-                    
+
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -284,17 +284,18 @@ Rectangle {
             right: parent.right
             top: parent.top
         }
+        height: 36
         color: "#cecece"
 
         Text {
             anchors {
-                left: parent.left
                 verticalCenter: parent.verticalCenter
-                margins: 16
+                left: parent.left
+                leftMargin: 20
             }
-            color: "#787878"
-
             text: listView.count + " actions"
+            color: "#787878"
+            font.pixelSize: 14
         }
     }
 
@@ -311,7 +312,7 @@ Rectangle {
             clip: true
             model: actionProxy
 
-            highlightMoveDuration: 0
+            highlightMoveDuration: 400
             highlight: Rectangle {
                 color: "black"
                 opacity: 0.1
@@ -325,7 +326,7 @@ Rectangle {
                     right: parent.right
                 }
                 height: 64
-
+                color: 'transparent'
                 Item {
                     id: imageItem
                     anchors {
