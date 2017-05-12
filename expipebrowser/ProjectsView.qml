@@ -201,7 +201,7 @@ Item {
             bottom: parent.bottom
         }
         color: "#fdfdfd"
-        
+
         EventSource {
             id: moduleEventSource
             path: currentProject ? "project_modules/" + currentProject : ""
@@ -213,13 +213,13 @@ Item {
                 refreshModules(path)
             }
         }
-        
+
         Column {
             anchors {
                 left: parent.left
                 right: parent.right
             }
-            
+
             Label {
                 anchors {
                     left: parent.left
@@ -260,6 +260,27 @@ Item {
                     }
                 }
 
+                Button {
+                    text: "Delete project"
+                    onClicked: {
+                        deleteDialog.open()
+                    }
+                }
+
+            }
+
+            Dialog {
+                id: deleteDialog
+                title: "Are you sure?"
+                standardButtons: Dialog.Cancel | Dialog.Ok
+                onAccepted: {
+                    Firebase.remove("projects/" + currentProject, function(reply) {
+                        console.log("Removed project and got reply", reply.responseText)
+                    })
+                    Firebase.remove("project_modules/" + currentProject, function(reply) {
+                        console.log("Removed project modules and got reply", reply.responseText)
+                    })
+                }
             }
 
             Label {
@@ -289,7 +310,7 @@ Item {
                 id: newModuleDialog
                 modulesPath: "project_modules/" + currentProject
             }
-            
+
             Repeater {
                 id: moduleView
                 model: moduleEventSource
@@ -304,6 +325,7 @@ Item {
                     }
                 }
             }
+
         }
     }
 }

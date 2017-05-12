@@ -79,22 +79,25 @@ Rectangle {
                     codePopup.open()
                 }
             }
-            
+
             Button {
-                text: "Delete"
+                text: "Delete action"
                 onClicked: {
                     deleteDialog.open()
                 }
             }
         }
-        
+
         Dialog {
             id: deleteDialog
             title: "Are you sure?"
             standardButtons: Dialog.Cancel | Dialog.Ok
             onAccepted: {
                 Firebase.remove("actions/" + currentProject + "/" + experimentData.__key, function(reply) {
-                    console.log("Removed and got reply", reply.responseText)
+                    console.log("Removed action and got reply", reply.responseText)
+                })
+                Firebase.remove("action_modules/" + currentProject + "/" + experimentData.__key, function(reply) {
+                    console.log("Removed action modules and got reply", reply.responseText)
                 })
             }
         }

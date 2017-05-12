@@ -10,9 +10,9 @@ Rectangle {
 
     property string selectedState: menuView.currentItem ? menuView.currentItem.identifier : "projects"
     property string currentProject: "None selected"
-    
+
     color: "#363636"
-    
+
     ListModel {
         id: menuModel
         ListElement {
@@ -25,16 +25,6 @@ Rectangle {
             needsProject: true
         }
         ListElement {
-            name: "Subjects"
-            identifier: "subjects"
-            needsProject: true
-        }
-        ListElement {
-            name: "Users"
-            identifier: "users"
-            needsProject: true
-        }
-        ListElement {
             name: "Templates"
             identifier: "templates"
         }
@@ -43,7 +33,7 @@ Rectangle {
             identifier: "settings"
         }
     }
-    
+
     Column {
         id: menuView
         property int currentIndex: 0
