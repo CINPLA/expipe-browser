@@ -427,10 +427,6 @@ class ActionAttributeModel(QAbstractListModel):
             self.TAG_ROLE: b"attribute"
         }
 
-    @pyqtSlot(int, result=str)
-    def get(self, row):
-        return self._attributes[row]
-
     def setSource(self, source):
         if source == self._source:
             return
@@ -453,7 +449,10 @@ class ActionAttributeModel(QAbstractListModel):
                         for attribute in val[self._name]:
                             attributes.add(attribute)
                     elif isinstance(val[self._name], str):
-                        attributes.add(val[self._name])
+                        attr = val[self._name]
+                        if self._name == 'datetime':
+                            attr = attr.split('T')[0]
+                        attributes.add(attr)
             except:
                 print("ERROR: Unexpected value of key", key)
 

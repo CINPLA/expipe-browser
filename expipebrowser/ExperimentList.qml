@@ -85,7 +85,10 @@ Rectangle {
                 }
 
                 Label {
-                    text: "Action name:"
+                    text: "Action:"
+                    height: 20
+                    font.pixelSize: 15
+                    font.weight: Font.Light
                 }
 
                 TextField {
@@ -98,179 +101,187 @@ Rectangle {
                     placeholderText: "Search"
                 }
 
-                TableView {
-                    id: tagListView
+                Column {
 
-                    anchors {
-                        left: parent.left
-                        right: parent.right
+                    Label {
+                       text: "Tag"
+                       height: 20
+                       font.pixelSize: 15
+                       font.weight: Font.Light
                     }
-                    height: 175
-                    model: ActionAttributeModel {
-                        source: eventSource
-                        name: 'tags'
-                    }
-                    selectionMode: SelectionMode.MultiSelection
-                    selection.onSelectionChanged: {
-                        var tags = ""
-                        selection.forEach(function(rowIndex) {
-                            tags = tags + ";" + model.get(rowIndex)
-                        })
-                        actionProxy.setRequirement("tags", tags)
-                    }
-                    TableViewColumn {
-                        role: "attribute"
-                        title: "Tag"
-                        width: 100
-                    }
-                    // delegate: Item {
-                    //     anchors {
-                    //         left: parent.left
-                    //         right: parent.right
-                    //     }
-                    //     height: 40
-                    //     Text {
-                    //         text: tag
-                    //         anchors {
-                    //             left: parent.left
-                    //             leftMargin: 8
-                    //             verticalCenter: parent.verticalCenter
-                    //         }
-                    //     }
-                    //     MouseArea {
-                    //         anchors.fill: parent
-                    //         onClicked: tagListView.
-                    //     }
-                    // }
-                }
-                TableView {
-                    id: subjectListView
+                    Repeater {
+                        id: tagRepeater
+                        property var checkedElements: []
+                        model: ActionAttributeModel {
+                            source: eventSource
+                            name: 'tags'
+                        }
+                        delegate:   CheckBox {
+                            text: attribute
 
-                    anchors {
-                        left: parent.left
-                        right: parent.right
+                            onCheckedChanged: {
+                                if(checked) {tagRepeater.checkedElements.push(attribute)}
+                                else {tagRepeater.checkedElements.splice(
+                                    tagRepeater.checkedElements.indexOf(attribute), 1)
+                                }
+                                var attributes = ""
+                                for(var i in tagRepeater.checkedElements) {
+                                  var attr = tagRepeater.checkedElements[i]
+                                    attributes = attributes + ";" + attr
+                                }
+                                actionProxy.setRequirement("tags", attributes)
+                            }
+                        }
                     }
-                    height: 175
-                    model: ActionAttributeModel {
-                        source: eventSource
-                        name: 'subjects'
+                    Label {
+                       text: "Type"
+                       height: 20
+                       font.pixelSize: 15
+                       font.weight: Font.Light
                     }
-                    selectionMode: SelectionMode.MultiSelection
-                    selection.onSelectionChanged: {
-                        var tags = ""
-                        selection.forEach(function(rowIndex) {
-                            tags = tags + ";" + model.get(rowIndex)
-                        })
-                        actionProxy.setRequirement("subjects", tags)
-                    }
-                    TableViewColumn {
-                        role: "attribute"
-                        title: "Subject"
-                        width: 100
-                    }
-                }
-                TableView {
-                    id: typeListView
+                    Repeater {
+                        id: typeRepeater
+                        property var checkedElements: []
+                        model: ActionAttributeModel {
+                            source: eventSource
+                            name: 'type'
+                          }
+                          delegate:   CheckBox {
+                              text: attribute
 
-                    anchors {
-                        left: parent.left
-                        right: parent.right
+                            onCheckedChanged: {
+                                if(checked) {typeRepeater.checkedElements.push(attribute)}
+                                else {typeRepeater.checkedElements.splice(
+                                    typeRepeater.checkedElements.indexOf(attribute), 1)
+                                }
+                                var attributes = ""
+                                for(var i in typeRepeater.checkedElements) {
+                                  var attr = typeRepeater.checkedElements[i]
+                                    attributes = attributes + ";" + attr
+                                }
+                                actionProxy.setRequirement("type", attributes)
+                            }
+                        }
                     }
-                    height: 175
-                    model: ActionAttributeModel {
-                        source: eventSource
-                        name: 'type'
+                    Label {
+                       text: "User"
+                       height: 20
+                       font.pixelSize: 15
+                       font.weight: Font.Light
                     }
-                    selectionMode: SelectionMode.MultiSelection
-                    selection.onSelectionChanged: {
-                        var tags = ""
-                        selection.forEach(function(rowIndex) {
-                            tags = tags + ";" + model.get(rowIndex)
-                        })
-                        actionProxy.setRequirement("type", tags)
-                    }
-                    TableViewColumn {
-                        role: "attribute"
-                        title: "Action type"
-                        width: 100
-                    }
-                }
-                TableView {
-                    id: locationListView
+                    Repeater {
+                        id: userRepeater
+                        property var checkedElements: []
+                        model: ActionAttributeModel {
+                            source: eventSource
+                            name: 'users'
+                        }
+                        delegate:   CheckBox {
+                            text: attribute
 
-                    anchors {
-                        left: parent.left
-                        right: parent.right
+                            onCheckedChanged: {
+                                if(checked) {userRepeater.checkedElements.push(attribute)}
+                                else {userRepeater.checkedElements.splice(
+                                    userRepeater.checkedElements.indexOf(attribute), 1)
+                                }
+                                var attributes = ""
+                                for(var i in userRepeater.checkedElements) {
+                                  var attr = userRepeater.checkedElements[i]
+                                    attributes = attributes + ";" + attr
+                                }
+                                actionProxy.setRequirement("users", attributes)
+                            }
+                        }
                     }
-                    height: 175
-                    model: ActionAttributeModel {
-                        source: eventSource
-                        name: 'location'
+                    Label {
+                       text: "Subject"
+                       height: 20
+                       font.pixelSize: 15
+                       font.weight: Font.Light
                     }
-                    selectionMode: SelectionMode.MultiSelection
-                    selection.onSelectionChanged: {
-                        var tags = ""
-                        selection.forEach(function(rowIndex) {
-                            tags = tags + ";" + model.get(rowIndex)
-                        })
-                        actionProxy.setRequirement("location", tags)
-                    }
-                    TableViewColumn {
-                        role: "attribute"
-                        title: "Location"
-                        width: 100
-                    }
-                }
-                TableView {
-                    id: userListView
+                    Repeater {
+                        id: subjectRepeater
+                        property var checkedElements: []
+                        model: ActionAttributeModel {
+                            source: eventSource
+                            name: 'subjects'
+                        }
+                        delegate:   CheckBox {
+                            text: attribute
 
-                    anchors {
-                        left: parent.left
-                        right: parent.right
+                            onCheckedChanged: {
+                                if(checked) {subjectRepeater.checkedElements.push(attribute)}
+                                else {subjectRepeater.checkedElements.splice(
+                                    subjectRepeater.checkedElements.indexOf(attribute), 1)
+                                }
+                                var attributes = ""
+                                for(var i in subjectRepeater.checkedElements) {
+                                  var attr = subjectRepeater.checkedElements[i]
+                                    attributes = attributes + ";" + attr
+                                }
+                                actionProxy.setRequirement("subjects", attributes)
+                            }
+                        }
                     }
-                    height: 175
-                    model: ActionAttributeModel {
-                        source: eventSource
-                        name: 'users'
+                    Label {
+                       text: "Location"
+                       height: 20
+                       font.pixelSize: 15
+                       font.weight: Font.Light
                     }
-                    selectionMode: SelectionMode.MultiSelection
-                    selection.onSelectionChanged: {
-                        var tags = ""
-                        selection.forEach(function(rowIndex) {
-                            tags = tags + ";" + model.get(rowIndex)
-                        })
-                        actionProxy.setRequirement("users", tags)
-                    }
-                    TableViewColumn {
-                        role: "attribute"
-                        title: "User"
-                        width: 100
-                    }
-                }
-                TableView {
-                    id: datetimeListView
+                    Repeater {
+                        id: locationRepeater
+                        property var checkedElements: []
+                        model: ActionAttributeModel {
+                            source: eventSource
+                            name: 'location'
+                        }
+                        delegate:   CheckBox {
+                            text: attribute
 
-                    anchors {
-                        left: parent.left
-                        right: parent.right
+                            onCheckedChanged: {
+                                if(checked) {locationRepeater.checkedElements.push(attribute)}
+                                else {locationRepeater.checkedElements.splice(
+                                    locationRepeater.checkedElements.indexOf(attribute), 1)
+                                }
+                                var attributes = ""
+                                for(var i in locationRepeater.checkedElements) {
+                                  var attr = locationRepeater.checkedElements[i]
+                                    attributes = attributes + ";" + attr
+                                }
+                                actionProxy.setRequirement("location", attributes)
+                            }
+                        }
                     }
-                    height: 175
-                    model: ActionAttributeModel {
-                        source: eventSource
-                        name: 'datetime'
+                    Label {
+                       text: "Date"
+                       height: 20
+                       font.pixelSize: 15
+                       font.weight: Font.Light
                     }
-                    selectionMode: SelectionMode.MultiSelection
-                    selection.onSelectionChanged: {
-                        var tags = ""
-                        selection.forEach(function(rowIndex) {
-                            tags = tags + ";" + model.get(rowIndex)
-                        })
-                        actionProxy.setRequirement("datetime", tags)
-                    }
-                    TableViewColumn {
-                        role: "attribute"
-                        title: "datetime"
-                        width: 100
+                    Repeater {
+                        id: datetimeRepeater
+                        property var checkedElements: []
+                        model: ActionAttributeModel {
+                            source: eventSource
+                            name: 'datetime'
+                        }
+                        delegate:   CheckBox {
+                            text: attribute
+
+                            onCheckedChanged: {
+                                if(checked) {datetimeRepeater.checkedElements.push(attribute)}
+                                else {datetimeRepeater.checkedElements.splice(
+                                    datetimeRepeater.checkedElements.indexOf(attribute), 1)
+                                }
+                                var attributes = ""
+                                for(var i in datetimeRepeater.checkedElements) {
+                                  var attr = datetimeRepeater.checkedElements[i]
+                                    attributes = attributes + ";" + attr
+                                }
+                                actionProxy.setRequirement("datetime", attributes)
+                            }
+                        }
                     }
                 }
             }
