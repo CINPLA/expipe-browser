@@ -373,7 +373,7 @@ class ActionProxy(QSortFilterProxyModel):
                             matched_attributes = True
                     if not matched_attributes:
                         return False
-        except KeyError or TypeError or IndexError:
+        except Exception:
             return False
 
         return True
