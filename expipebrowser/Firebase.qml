@@ -97,8 +97,8 @@ QtObject {
         req.open("POST", url)
         req.send(JSON.stringify(data))
     }
-    
-    Timer {
+
+    property var timer: Timer {
         interval: 60 * 1000
         repeat: true
         running: true
