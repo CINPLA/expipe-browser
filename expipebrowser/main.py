@@ -303,7 +303,11 @@ class EventSource(QAbstractListModel):
         for key in path[:-1]:
             dic = dic.setdefault(key, {})
         if value is None:
-            del(dic[path[-1]])
+            if path[-1].isnumeric():
+                idx = int(path[-1])
+            else:
+                idx = path[-1]
+            del(dic[idx])
         else:
             if not isinstance(dic, dict):
                 # need to have a dict to set value
@@ -448,6 +452,10 @@ class ActionAttributeModel(QAbstractListModel):
                     if isinstance(val[self._name], OrderedDict):
                         for attribute in val[self._name]:
                             attributes.add(attribute)
+                        print('Warning: dict representation of list is deprecated')
+                    if isinstance(val[self._name], list):
+                        for attribute in val[self._name]:
+                            attributes.add(attribute)
                     elif isinstance(val[self._name], str):
                         attr = val[self._name]
                         if self._name == 'datetime':
@@ -484,7 +492,7 @@ class Pyrebase(QObject):
     @pyqtSlot(str, name="buildUrl", result=str)
     def build_url(self, path):
         return expipe.io.core.db.child(path).build_request_url(expipe.io.core.user["idToken"])
-    
+
     @pyqtSlot(name="refreshToken")
     def refresh_token(self):
         expipe.io.core.refresh_token()

@@ -99,6 +99,9 @@ Rectangle {
                 Firebase.remove("action_modules/" + currentProject + "/" + experimentData.__key, function(reply) {
                     console.log("Removed action modules and got reply", reply.responseText)
                 })
+                Firebase.remove("action_messages/" + currentProject + "/" + experimentData.__key, function(reply) {
+                    console.log("Removed action messages and got reply", reply.responseText)
+                })
             }
         }
 
@@ -157,19 +160,19 @@ Rectangle {
                 text: "Date and time"
             }
 
-            ExperimentListEdit {
+            FirebaseListEdit {
                 experimentData: root.experimentData
                 property: "users"
                 text: "Experimenters"
             }
 
-            ExperimentListEdit {
+            FirebaseListEdit {
                 experimentData: root.experimentData
                 property: "subjects"
                 text: "Subjects"
             }
 
-            ExperimentListEdit {
+            FirebaseListEdit {
                 experimentData: root.experimentData
                 property: "tags"
                 text: "Tags"
