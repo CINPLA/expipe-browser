@@ -145,7 +145,10 @@ class EventSource(QAbstractListModel):
             self.endRemoveRows()
             if data is not None:
                 self.beginInsertRows(QModelIndex(), 0, len(data) - 1)
-                self._contents = OrderedDict(data)
+                if isinstance(data, list):
+                    self._contents = OrderedDict({str(key): value for key, value in enumerate(data)})
+                else:
+                    self._contents = OrderedDict(data)
                 self.endInsertRows()
         else:
             changed_key = path[0]
