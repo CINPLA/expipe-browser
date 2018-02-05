@@ -4,10 +4,9 @@ python:
   - "3.5"
   - "3.6"
 install:
-  - source libs/travis-conda-scripts/scripts/config.sh
   - bash -ex libs/travis-conda-scripts/scripts/travis_install.sh
-  - conda install pyqt=5  # TODO remove this hack for pyrcc5 to work, 
-                          # should be put in meta.yml in the long run, 
+  - conda install pyqt=5  # TODO remove this hack for pyrcc5 to work,
+                          # should be put in meta.yml in the long run,
                           # but conda-forge has an old version of PyQt (4.8)
 script:
   - source libs/travis-conda-scripts/scripts/config.sh
