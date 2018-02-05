@@ -6,8 +6,8 @@ source:
     git_url: ..
 build:
     script: python setup.py install
- # noarch: python  # TODO Add back noarch when it works properly on Windows,
-                   # we are converting packages manually now
+ noarch: python
+
 entry_points:
   - expipe-browser = expipebrowser.main:main
 
